@@ -5,8 +5,8 @@ async function main() {
   const BatchToken = await ethers.getContractFactory("BatchToken");
   console.log("Deploying BatchToken...");
   const token = await BatchToken.deploy();
-  await token.deployed();
-  console.log("BatchToken deployed at:", token.address);
+  await token.waitForDeployment();    // ← ethers v6 replacement for deployed()
+  console.log("BatchToken deployed at:", token.target);
 }
 
 main()
