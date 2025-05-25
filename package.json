@@ -3,15 +3,16 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-  "compile": "hardhat compile",
-  "test":    "hardhat test"
-},
+    "compile": "hardhat compile",
+    "test": "hardhat test"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "chai": "^5.2.0",
     "dotenv": "^16.5.0",
     "ethers": "^5.8.0",
     "hardhat": "^2.24.0"
