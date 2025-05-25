@@ -1,6 +1,7 @@
 // hardhat.config.js
 require("dotenv").config();
-require("@nomiclabs/hardhat-ethers");
+require("@nomicfoundation/hardhat-ethers");
+require("@nomicfoundation/hardhat-chai-matchers");
 
 const {
   ARB_GOERLI_RPC,
