@@ -1,0 +1,149 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "BatchToken",
+  "sourceName": "contracts/BatchToken.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "BatchReceived",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "BatchShipped",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "by",
+          "type": "address"
+        }
+      ],
+      "name": "TransferConfirmed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "plannedShipDate",
+          "type": "uint256"
+        }
+      ],
+      "name": "TransferProposed",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "confirmTransfer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "plannedShipDate",
+          "type": "uint256"
+        }
+      ],
+      "name": "proposeTransfer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "receiveBatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "shipBatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061034c806100206000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c80632c48e7db14610051578063ba5352811461006d578063e9cee4b914610089578063fd2e3562146100a5575b600080fd5b61006b6004803603810190610066919061020e565b6100c1565b005b6100876004803603810190610082919061020e565b610108565b005b6100a3600480360381019061009e919061020e565b610138565b005b6100bf60048036038101906100ba9190610299565b610168565b005b3373ffffffffffffffffffffffffffffffffffffffff16817f88f3a431c8e7503e1205db0131787d8fdd671a45c660e4c9083954584993912f60405160405180910390a350565b807fa0a01734fd51ee303fab34f5e6d6c9f521e8e346914be69d0e1c211920b29e6e60405160405180910390a250565b807fe0c0288112891897b19d64626d45679eb4439dc0fb2896ed5dc3b6028edc2ed460405160405180910390a250565b8173ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16847f38ad22e5704952fc5eaf855fe6a8193abeeae5963626b72a552fe2584d053e4e846040516101c691906102fb565b60405180910390a4505050565b600080fd5b6000819050919050565b6101eb816101d8565b81146101f657600080fd5b50565b600081359050610208816101e2565b92915050565b600060208284031215610224576102236101d3565b5b6000610232848285016101f9565b91505092915050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b60006102668261023b565b9050919050565b6102768161025b565b811461028157600080fd5b50565b6000813590506102938161026d565b92915050565b6000806000606084860312156102b2576102b16101d3565b5b60006102c0868287016101f9565b93505060206102d186828701610284565b92505060406102e2868287016101f9565b9150509250925092565b6102f5816101d8565b82525050565b600060208201905061031060008301846102ec565b9291505056fea2646970667358221220d95c9c7026273491984c0b46eead448c4085c987923f1eac36ea8bbd12885c0464736f6c63430008140033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061004c5760003560e01c80632c48e7db14610051578063ba5352811461006d578063e9cee4b914610089578063fd2e3562146100a5575b600080fd5b61006b6004803603810190610066919061020e565b6100c1565b005b6100876004803603810190610082919061020e565b610108565b005b6100a3600480360381019061009e919061020e565b610138565b005b6100bf60048036038101906100ba9190610299565b610168565b005b3373ffffffffffffffffffffffffffffffffffffffff16817f88f3a431c8e7503e1205db0131787d8fdd671a45c660e4c9083954584993912f60405160405180910390a350565b807fa0a01734fd51ee303fab34f5e6d6c9f521e8e346914be69d0e1c211920b29e6e60405160405180910390a250565b807fe0c0288112891897b19d64626d45679eb4439dc0fb2896ed5dc3b6028edc2ed460405160405180910390a250565b8173ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16847f38ad22e5704952fc5eaf855fe6a8193abeeae5963626b72a552fe2584d053e4e846040516101c691906102fb565b60405180910390a4505050565b600080fd5b6000819050919050565b6101eb816101d8565b81146101f657600080fd5b50565b600081359050610208816101e2565b92915050565b600060208284031215610224576102236101d3565b5b6000610232848285016101f9565b91505092915050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b60006102668261023b565b9050919050565b6102768161025b565b811461028157600080fd5b50565b6000813590506102938161026d565b92915050565b6000806000606084860312156102b2576102b16101d3565b5b60006102c0868287016101f9565b93505060206102d186828701610284565b92505060406102e2868287016101f9565b9150509250925092565b6102f5816101d8565b82525050565b600060208201905061031060008301846102ec565b9291505056fea2646970667358221220d95c9c7026273491984c0b46eead448c4085c987923f1eac36ea8bbd12885c0464736f6c63430008140033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

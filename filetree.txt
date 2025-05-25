@@ -1,0 +1,27 @@
+.
+├── .git
+│   ├── COMMIT_EDITMSG
+│   ├── FETCH_HEAD
+│   ├── HEAD
+│   ├── branches
+│   ├── config
+│   ├── description
+│   ├── hooks
+│   ├── index
+│   ├── info
+│   ├── logs
+│   ├── objects
+│   └── refs
+├── .gitattributes
+├── README.md
+├── batch-chain
+│   ├── .env
+│   ├── contracts
+│   ├── hardhat.config.js
+│   ├── node_modules
+│   ├── package-lock.json
+│   ├── package.json
+│   └── scripts
+└── filetree.txt
+
+12 directories, 13 files

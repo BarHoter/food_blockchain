@@ -1,0 +1,10 @@
+# node
+node_modules/
+
+# hardhat
+cache/
+artifacts/
+
+# env / IDE
+.env
+.DS_Store
