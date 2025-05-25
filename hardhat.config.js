@@ -1,21 +1,38 @@
+// hardhat.config.js
 require("dotenv").config();
 require("@nomiclabs/hardhat-ethers");
 
+const {
+  ARB_GOERLI_RPC,
+  OPT_GOERLI_RPC,
+  PRIVATE_KEY
+} = process.env;
+
+// Always have a local Hardhat network
+const networks = {
+  hardhat: {
+    chainId: 1337,
+    blockGasLimit: 12_000_000
+  }
+};
+
+// Only add Arbitrum Goerli if both RPC URL + key are present
+if (ARB_GOERLI_RPC && PRIVATE_KEY) {
+  networks.arbitrumGoerli = {
+    url: ARB_GOERLI_RPC,
+    accounts: [PRIVATE_KEY]
+  };
+}
+
+// Only add Optimism Goerli if both RPC URL + key are present
+if (OPT_GOERLI_RPC && PRIVATE_KEY) {
+  networks.optimismGoerli = {
+    url: OPT_GOERLI_RPC,
+    accounts: [PRIVATE_KEY]
+  };
+}
+
 module.exports = {
   solidity: "0.8.20",
-  networks: {
-    hardhat: {
-      chainId: 1337,
-      blockGasLimit: 12_000_000
-    },
-    // later, point these at your L2 testnets:
-    arbitrumGoerli: {
-      url: process.env.ARB_GOERLI_RPC,
-      accounts: [process.env.PRIVATE_KEY]
-    },
-    optimismGoerli: {
-      url: process.env.OPT_GOERLI_RPC,
-      accounts: [process.env.PRIVATE_KEY]
-    }
-  }
+  networks
 };
