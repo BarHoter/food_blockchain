@@ -20,5 +20,39 @@ describe("BatchToken", function () {
             .to.emit(token, "TransferProposed")
             .withArgs(42, owner.address, addr1.address, 1_700_000_000);
     });
-    // add more tests here…
+
+    it("handles the happy path", async () => {
+        await expect(token.proposeTransfer(1, addr1.address, 0))
+            .to.emit(token, "TransferProposed")
+            .withArgs(1, owner.address, addr1.address, 0);
+
+        await expect(token.confirmTransfer(1))
+            .to.emit(token, "TransferConfirmed")
+            .withArgs(1, owner.address);
+
+        await expect(token.shipBatch(1))
+            .to.emit(token, "BatchShipped")
+            .withArgs(1);
+
+        await expect(token.receiveBatch(1))
+            .to.emit(token, "BatchReceived")
+            .withArgs(1);
+    });
+
+    it("reverts on invalid transitions", async () => {
+        await expect(token.confirmTransfer(99)).to.be.revertedWith("not proposed");
+
+        await token.proposeTransfer(2, addr1.address, 0);
+        await expect(token.proposeTransfer(2, addr1.address, 0)).to.be.revertedWith(
+            "already initiated"
+        );
+
+        await expect(token.shipBatch(2)).to.be.revertedWith("not confirmed");
+        await expect(token.receiveBatch(2)).to.be.revertedWith("not shipped");
+
+        await token.confirmTransfer(2);
+        await expect(token.confirmTransfer(2)).to.be.revertedWith("not proposed");
+
+        await expect(token.receiveBatch(2)).to.be.revertedWith("not shipped");
+    });
 });
