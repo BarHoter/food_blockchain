@@ -15,8 +15,14 @@ jobs:
         with:
           fetch-depth: 2            # We need the parent commit to diff
 
+      - name: Install snapshot dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq tree
+
       - name: Generate repo_snapshot.txt
         run: |
+          set -e
           # 1) Header
           echo "### 🔄 Repo snapshot after PR #${{ github.event.pull_request.number }}" > repo_snapshot.txt
           echo "" >> repo_snapshot.txt
@@ -77,7 +83,7 @@ jobs:
           SNAPSHOT_JSON=$(jq -Rs . < repo_snapshot.txt)
           PAYLOAD="{\"files\":{\"repo_snapshot.txt\":{\"content\":$SNAPSHOT_JSON}}}"
           # PATCH to update the Gist
-          curl -s -X PATCH \
+          curl -s -f -X PATCH \
             -H "Authorization: token $GIST_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -d "$PAYLOAD" \
