@@ -28,4 +28,10 @@ To deploy, edit `hardhat.config.js` with your network settings and run:
 npx hardhat run scripts/deploy.js --network <network>
 ```
 
+When experimenting locally, you can start a Hardhat node with:
+
+```bash
+npx hardhat node
+```
+
 After each pull request is merged, a workflow uploads a snapshot of the repo to a GitHub Gist.
