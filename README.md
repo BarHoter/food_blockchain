@@ -58,3 +58,4 @@ await token.receiveBatch(1);
 ```
 
 Each step emits an event that can be indexed off chain.
+\nSee **AGENTS.md** for a list of all agents and their roles.
