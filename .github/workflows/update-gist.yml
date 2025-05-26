@@ -1,0 +1,84 @@
+name: Update Repo Snapshot Gist
+
+on:
+  pull_request:
+    types: [closed]                 # Trigger this workflow when a PR is closed
+
+jobs:
+  update-gist:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest          # Use GitHub’s Ubuntu runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2            # We need the parent commit to diff
+
+      - name: Generate repo_snapshot.txt
+        run: |
+          # 1) Header
+          echo "### 🔄 Repo snapshot after PR #${{ github.event.pull_request.number }}" > repo_snapshot.txt
+          echo "" >> repo_snapshot.txt
+
+          # 2) Directory tree (exclude noise)
+          echo "#### Directory tree (excluding .git, node_modules, artifacts, cache):" >> repo_snapshot.txt
+          echo '```' >> repo_snapshot.txt
+          tree -a -I '.git|node_modules|artifacts|cache' >> repo_snapshot.txt
+          echo '```' >> repo_snapshot.txt
+          echo "" >> repo_snapshot.txt
+
+          # 3) Compact diff of the merged PR
+          echo "#### Compact diff for this PR:" >> repo_snapshot.txt
+          echo '```diff' >> repo_snapshot.txt
+          git diff --compact-summary "${{ github.event.pull_request.merge_commit_sha }}^" "${{ github.event.pull_request.merge_commit_sha }}" >> repo_snapshot.txt
+          echo '```' >> repo_snapshot.txt
+          echo "" >> repo_snapshot.txt
+
+          # 4) Last 5 commit messages for extra history
+          echo "#### Last 5 commit messages:" >> repo_snapshot.txt
+          echo '```' >> repo_snapshot.txt
+          git log -5 --pretty=format:"%h %s" >> repo_snapshot.txt
+          echo '```' >> repo_snapshot.txt
+          echo "" >> repo_snapshot.txt
+
+          # 5) Critical config files in full
+          echo "#### package.json:" >> repo_snapshot.txt
+          echo '```json' >> repo_snapshot.txt
+          cat package.json >> repo_snapshot.txt
+          echo '```' >> repo_snapshot.txt
+          echo "" >> repo_snapshot.txt
+
+          echo "#### hardhat.config.js:" >> repo_snapshot.txt
+          echo '```js' >> repo_snapshot.txt
+          cat hardhat.config.js >> repo_snapshot.txt
+          echo '```' >> repo_snapshot.txt
+          echo "" >> repo_snapshot.txt
+
+          # 6) Full contents of every changed file in this PR
+          echo "#### Full contents of all files changed in this PR:" >> repo_snapshot.txt
+          git diff --name-only "${{ github.event.pull_request.merge_commit_sha }}^" "${{ github.event.pull_request.merge_commit_sha }}" \
+          | while read file; do
+              if [ -f "$file" ]; then
+                echo "" >> repo_snapshot.txt
+                echo "----- $file -----" >> repo_snapshot.txt
+                echo '```' >> repo_snapshot.txt
+                cat "$file" >> repo_snapshot.txt
+                echo '```' >> repo_snapshot.txt
+              fi
+            done
+
+      - name: Update Gist via API
+        env:
+          GIST_ID: 984896f7f330cd85ee9bcc27bc35a48e 
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+        run: |
+          # JSON-encode the snapshot file content
+          SNAPSHOT_JSON=$(jq -Rs . < repo_snapshot.txt)
+          PAYLOAD="{\"files\":{\"repo_snapshot.txt\":{\"content\":$SNAPSHOT_JSON}}}"
+          # PATCH to update the Gist
+          curl -s -X PATCH \
+            -H "Authorization: token $GIST_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -d "$PAYLOAD" \
+            "https://api.github.com/gists/$GIST_ID"
