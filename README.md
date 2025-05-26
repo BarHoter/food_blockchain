@@ -4,16 +4,11 @@ This repository contains a minimal Hardhat project that demonstrates a token use
 
 ## Getting started
 
-Install the dependencies:
+Run the setup script while online. It installs dependencies and compiles the
+contracts so subsequent commands work offline:
 
 ```bash
-npm install
-```
-
-Compile the contracts:
-
-```bash
-npx hardhat compile
+./setup.sh
 ```
 
 Run the unit tests:
@@ -35,3 +30,31 @@ npx hardhat node
 ```
 
 After each pull request is merged, a workflow uploads a snapshot of the repo to a GitHub Gist.
+
+## Network configuration
+
+Deployment scripts rely on three optional environment variables:
+
+- `PRIVATE_KEY` – private key of the deploying account
+- `ARB_GOERLI_RPC` – RPC endpoint for Arbitrum Goerli
+- `OPT_GOERLI_RPC` – RPC endpoint for Optimism Goerli
+
+When these variables are provided, the corresponding networks are made available in `hardhat.config.js`.
+
+## Offline compilation
+
+A prebuilt copy of the Solidity `0.8.20` compiler is bundled under `compiler/soljson-v0.8.20.js`.
+Hardhat uses this file automatically, enabling `npx hardhat compile` to run even when the machine has no internet access.
+
+## Example lifecycle
+
+Below is a minimal example of how to progress a batch through its lifecycle:
+
+```javascript
+await token.proposeTransfer(1, recipient, 1_700_000_000);
+await token.confirmTransfer(1);
+await token.shipBatch(1);
+await token.receiveBatch(1);
+```
+
+Each step emits an event that can be indexed off chain.
