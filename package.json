@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "compile": "hardhat compile",
-    "test": "hardhat test",
+    "test:ci": "RUN_LOCAL_TESTS=false npx hardhat test",
+    "test:local": "RUN_LOCAL_TESTS=true  npx hardhat test",
+    "test": "npm run test:ci",
     "setup": "bash ./setup.sh"
   },
   "keywords": [],

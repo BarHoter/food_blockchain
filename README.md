@@ -58,4 +58,19 @@ await token.receiveBatch(1);
 ```
 
 Each step emits an event that can be indexed off chain.
-\nSee **AGENTS.md** for a list of all agents and their roles.
+See **AGENTS.md** for a list of all agents and their roles.
+
+## Testing
+
+Offline environments like CI run only the fast test suite:
+
+```bash
+npm test
+```
+
+To run the full suite, including tests that access the internet, set
+`RUN_LOCAL_TESTS=true` and use:
+
+```bash
+npm run test:local
+```
