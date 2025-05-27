@@ -16,6 +16,7 @@
    - Read and respect existing tests and CI rules
    - Apply code diffs, add new files, and open PRs
    - Ensure `npm test` passes before submitting a PR
+   - Runs `npm test` (CI-only tests)
 
 3. **Continuous Integration (GitHub Actions)**
    *Role: Enforces build quality*
@@ -32,3 +33,9 @@
    - Review and merge Codex PRs
    - Resolve conflicts, vendor binaries, manage secrets
    - Drive the roadmap and select next tasks
+   - Can run the full test suite locally via `npm run test:local`
+
+## Testing
+
+- `npm test` runs only CI-friendly tests (no network required)
+- `npm run test:local` runs the full suite, gated by `RUN_LOCAL_TESTS=true`
