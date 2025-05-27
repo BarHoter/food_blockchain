@@ -68,6 +68,8 @@ Offline environments like CI run only the fast test suite:
 npm test
 ```
 
+CI caches the local Hardhat compiler under `~/.cache/hardhat-nodejs/solc` so the first run downloads, subsequent runs are offline.
+
 To run the full suite, including tests that access the internet, set
 `RUN_LOCAL_TESTS=true` and use:
 
