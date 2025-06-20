@@ -100,5 +100,7 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
    ```
 5. Open `http://localhost:8080` in a browser (Chrome with MetaMask recommended).
    Connect your wallet, paste the contract address and interact using the buttons.
+4. Open `frontend/index.html` in a browser (Chrome with MetaMask recommended).
+5. Connect your wallet, paste the contract address and interact using the buttons.
 
 The UI uses Ethers.js via CDN, so no additional build steps are required.
