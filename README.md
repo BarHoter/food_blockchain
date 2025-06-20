@@ -76,3 +76,22 @@ To run the full suite, including tests that access the internet, set
 ```bash
 npm run test:local
 ```
+
+## Local frontend
+
+This repo ships a minimal web UI under `frontend/` that interacts with the `BatchToken` contract. To try it locally:
+
+1. Run `./setup.sh` to install dependencies and compile the contracts.
+2. Start a Hardhat node in one terminal:
+   ```bash
+   npx hardhat node
+   ```
+3. Deploy the contract to the local network in another terminal:
+   ```bash
+   npx hardhat run scripts/deploy.js --network localhost
+   ```
+   Copy the deployed contract address from the output.
+4. Open `frontend/index.html` in a browser (Chrome with MetaMask recommended).
+5. Connect your wallet, paste the contract address and interact using the buttons.
+
+The UI uses Ethers.js via CDN, so no additional build steps are required.
