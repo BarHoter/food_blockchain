@@ -91,6 +91,15 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
    npx hardhat run scripts/deploy.js --network localhost
    ```
    Copy the deployed contract address from the output.
+4. Serve the `frontend/` directory with any static HTTP server (MetaMask does not
+   inject `window.ethereum` on `file:` URLs). For example:
+   ```bash
+   npx http-server frontend -p 8080
+   # or
+   python3 -m http.server 8080 --directory frontend
+   ```
+5. Open `http://localhost:8080` in a browser (Chrome with MetaMask recommended).
+   Connect your wallet, paste the contract address and interact using the buttons.
 4. Open `frontend/index.html` in a browser (Chrome with MetaMask recommended).
 5. Connect your wallet, paste the contract address and interact using the buttons.
 
