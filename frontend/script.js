@@ -17,6 +17,10 @@ document.getElementById('connect').onclick = async () => {
 
 document.getElementById('loadContract').onclick = () => {
   const addr = document.getElementById('contractAddress').value.trim();
+  if (!ethers.isAddress(addr)) {
+    alert('Invalid contract address');
+    return;
+  }
   contract = new ethers.Contract(addr, abi, signer);
   document.getElementById('contractControls').style.display = 'block';
 };
