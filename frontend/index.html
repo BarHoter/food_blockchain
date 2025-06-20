@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BatchToken Frontend</title>
+</head>
+<body>
+  <h1>BatchToken Demo</h1>
+  <button id="connect">Connect Wallet</button>
+
+  <div id="controls" style="display:none;">
+    <label>Contract Address:
+      <input id="contractAddress" placeholder="0x..." size="42" />
+    </label>
+    <button id="loadContract">Load Contract</button>
+  </div>
+
+  <div id="contractControls" style="display:none;">
+    <h3>Propose Transfer</h3>
+    <input id="proposeBatchId" placeholder="Batch ID" type="number" />
+    <input id="proposeTo" placeholder="Recipient" size="42" />
+    <input id="proposeShipDate" placeholder="Ship date (unix)" type="number" />
+    <button id="btnPropose">Propose</button>
+
+    <h3>Confirm Transfer</h3>
+    <input id="confirmBatchId" placeholder="Batch ID" type="number" />
+    <button id="btnConfirm">Confirm</button>
+
+    <h3>Ship Batch</h3>
+    <input id="shipBatchId" placeholder="Batch ID" type="number" />
+    <button id="btnShip">Ship</button>
+
+    <h3>Receive Batch</h3>
+    <input id="receiveBatchId" placeholder="Batch ID" type="number" />
+    <button id="btnReceive">Receive</button>
+
+    <h3>Check Status</h3>
+    <input id="statusBatchId" placeholder="Batch ID" type="number" />
+    <button id="btnStatus">Get Status</button>
+    <pre id="statusOutput"></pre>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.14.1/dist/ethers.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
