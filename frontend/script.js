@@ -28,7 +28,8 @@ document.getElementById('loadContract').onclick = () => {
 document.getElementById('btnPropose').onclick = async () => {
   const id = document.getElementById('proposeBatchId').value;
   const to = document.getElementById('proposeTo').value;
-  const ts = document.getElementById('proposeShipDate').value;
+  const dateStr = document.getElementById('proposeShipDate').value;
+  const ts = Math.floor(new Date(dateStr).getTime() / 1000);
   await contract.proposeTransfer(id, to, ts);
 };
 
