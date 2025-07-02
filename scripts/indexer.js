@@ -26,7 +26,12 @@ async function main() {
   const outDir = path.join(__dirname, "..", "indexer");
   await fs.promises.mkdir(outDir, { recursive: true });
   const outFile = path.join(outDir, "events.json");
-  await fs.promises.writeFile(outFile, JSON.stringify(events, null, 2));
+  const json = JSON.stringify(
+    events,
+    (key, value) => (typeof value === "bigint" ? value.toString() : value),
+    2
+  );
+  await fs.promises.writeFile(outFile, json);
   console.log(`Saved ${events.length} events to ${outFile}`);
 }
 

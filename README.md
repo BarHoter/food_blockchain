@@ -108,7 +108,8 @@ The UI uses Ethers.js via CDN, so no additional build steps are required.
 ## Event indexer
 
 A simple indexer script collects all `BatchToken` events from a JSON-RPC
-provider and writes them to `indexer/events.json`.
+provider and writes them to `indexer/events.json`.  All numeric values are
+stringified so that BigInts can be represented in the resulting JSON file.
 
 ```bash
 # Deployed contract address required
