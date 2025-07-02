@@ -17,11 +17,23 @@ document.getElementById('connect').onclick = async () => {
 
 document.getElementById('loadContract').onclick = () => {
   const addr = document.getElementById('contractAddress').value.trim();
+  const statusEl = document.getElementById('contractStatus');
+  statusEl.textContent = '';
   if (!ethers.isAddress(addr)) {
     alert('Invalid contract address');
     return;
   }
-  contract = new ethers.Contract(addr, abi, signer);
+  const tmp = new ethers.Contract(addr, abi, signer);
+  const required = ['proposeTransfer', 'confirmTransfer', 'shipBatch', 'receiveBatch', 'status'];
+  const ok = required.every(fn => typeof tmp[fn] === 'function');
+  if (!ok) {
+    statusEl.textContent = 'Contract mismatch';
+    statusEl.style.color = 'red';
+    return;
+  }
+  contract = tmp;
+  statusEl.textContent = 'Contract loaded';
+  statusEl.style.color = 'green';
   document.getElementById('contractControls').style.display = 'block';
 };
 
