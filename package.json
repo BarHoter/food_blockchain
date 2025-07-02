@@ -7,7 +7,8 @@
     "test:ci": "RUN_LOCAL_TESTS=false npx hardhat test --no-compile",
     "test:local": "RUN_LOCAL_TESTS=true  npx hardhat test --no-compile",
     "test": "npm run test:ci",
-    "setup": "bash ./setup.sh"
+    "setup": "bash ./setup.sh",
+    "indexer": "node scripts/indexer.js"
   },
   "keywords": [],
   "author": "",
