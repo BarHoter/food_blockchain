@@ -104,3 +104,15 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
 5. Connect your wallet, paste the contract address and interact using the buttons.
 
 The UI uses Ethers.js via CDN, so no additional build steps are required.
+
+## Event indexer
+
+A simple indexer script collects all `BatchToken` events from a JSON-RPC
+provider and writes them to `indexer/events.json`.
+
+```bash
+# Deployed contract address required
+CONTRACT_ADDRESS=<address> npm run indexer
+```
+
+Set `PROVIDER_URL` if your node is not running on `http://localhost:8545`.
