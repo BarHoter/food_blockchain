@@ -19,9 +19,13 @@ function sleep(ms) {
 async function loadCheckpoint() {
   try {
     const data = await fs.promises.readFile(CHECKPOINT_FILE, "utf8");
-    return JSON.parse(data).lastIndexedBlock || 0;
+    const parsed = JSON.parse(data);
+    return {
+      lastIndexedBlock: parsed.lastIndexedBlock || 0,
+      contractAddress: parsed.contractAddress || null,
+    };
   } catch (_) {
-    return 0;
+    return { lastIndexedBlock: 0, contractAddress: null };
   }
 }
 
@@ -29,8 +33,21 @@ async function saveCheckpoint(blockNumber) {
   await fs.promises.mkdir(OUT_DIR, { recursive: true });
   await fs.promises.writeFile(
     CHECKPOINT_FILE,
-    JSON.stringify({ lastIndexedBlock: blockNumber }, null, 2)
+    JSON.stringify(
+      { lastIndexedBlock: blockNumber, contractAddress: CONTRACT_ADDRESS },
+      null,
+      2
+    )
   );
+}
+
+async function resetIndex() {
+  try {
+    await fs.promises.unlink(CHECKPOINT_FILE);
+  } catch (_) {}
+  try {
+    await fs.promises.unlink(EVENTS_FILE);
+  } catch (_) {}
 }
 
 async function writeEvents(events) {
@@ -88,18 +105,31 @@ async function main() {
   const provider = new ethers.JsonRpcProvider(PROVIDER_URL);
   const contract = new ethers.Contract(CONTRACT_ADDRESS, artifact.abi, provider);
 
-  const lastIndexed = await loadCheckpoint();
+  const { lastIndexedBlock, contractAddress } = await loadCheckpoint();
+
+  if (
+    contractAddress &&
+    contractAddress.toLowerCase() !== CONTRACT_ADDRESS.toLowerCase()
+  ) {
+    console.log(
+      `Contract address changed from ${contractAddress} to ${CONTRACT_ADDRESS}. resetting index`
+    );
+    await resetIndex();
+  }
+
   const latestBlock = await provider.getBlockNumber();
   const toBlock = latestBlock - FINALITY_LAG;
 
-  if (toBlock <= lastIndexed) {
+  const checkpoint = contractAddress && contractAddress.toLowerCase() === CONTRACT_ADDRESS.toLowerCase() ? lastIndexedBlock : 0;
+
+  if (toBlock <= checkpoint) {
     console.log(
-      `No new finalized blocks. latest=${latestBlock} checkpoint=${lastIndexed}`
+      `No new finalized blocks. latest=${latestBlock} checkpoint=${checkpoint}`
     );
     return;
   }
 
-  const fromBlock = lastIndexed + 1;
+  const fromBlock = checkpoint + 1;
   const logs = await fetchEvents(contract, fromBlock, toBlock);
 
   if (logs.length === 0) {

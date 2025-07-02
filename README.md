@@ -110,7 +110,9 @@ The UI uses Ethers.js via CDN, so no additional build steps are required.
 The indexer script incrementally polls a JSON-RPC provider for a chosen
 contract event and appends the results to `indexer/events.json`. A checkpoint in
 `indexer/checkpoint.json` tracks the last processed block so the script can be
-invoked repeatedly (for example by a cron job).
+invoked repeatedly (for example by a cron job). The checkpoint stores the
+contract address and will automatically clear previous data if the address
+changes (e.g. after a redeploy).
 
 ```bash
 # Required contract address
@@ -122,3 +124,6 @@ Optional environment variables:
 - `EVENT_NAME` – event to index (default: `TransferProposed`)
 - `PROVIDER_URL` – RPC endpoint (default: `http://localhost:8545`)
 - `FINALITY_LAG` – blocks to wait before indexing (default: `6`)
+
+The indexer will delete `events.json` and `checkpoint.json` if the current
+`CONTRACT_ADDRESS` does not match what is stored in the checkpoint.
