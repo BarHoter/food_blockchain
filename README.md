@@ -127,3 +127,5 @@ Optional environment variables:
 
 The indexer will delete `events.json` and `checkpoint.json` if the current
 `CONTRACT_ADDRESS` does not match what is stored in the checkpoint.
+
+A simple dashboard is available at `frontend/dashboard.html`. Serve the repository root so the `indexer` folder is accessible and open the page to view indexed events.
