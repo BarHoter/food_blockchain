@@ -14,7 +14,8 @@ async function main() {
   const provider = new ethers.JsonRpcProvider(providerUrl);
   const contract = new ethers.Contract(contractAddress, artifact.abi, provider);
 
-  const logs = await contract.queryFilter({}, 0, "latest");
+  // Fetch all events from block 0 to the latest block
+  const logs = await contract.queryFilter("*", 0, "latest");
   const events = logs.map(log => ({
     event: log.event,
     args: log.args,
