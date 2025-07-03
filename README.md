@@ -122,7 +122,13 @@ Optional environment variables:
 
 - `EVENT_NAME` – event to index (default: `TransferProposed`)
 - `PROVIDER_URL` – RPC endpoint (default: `http://localhost:8545`)
-- `FINALITY_LAG` – blocks to wait before indexing (default: `6`)
+- `FINALITY_LAG` – blocks to wait before indexing (default: `0`)
+- `FINALITY_THRESHOLD` – blocks required for an event to be considered finalized
+  when tagged in `events.json` (default: `6`)
+
+Each entry in `events.json` now includes a `finalized` boolean that reflects
+whether the event has surpassed `FINALITY_THRESHOLD` blocks at the time of
+indexing.
 
 The indexer will delete `events.json` and `checkpoint.json` if the current
 `CONTRACT_ADDRESS` does not match what is stored in the checkpoint.

@@ -27,13 +27,15 @@ async function loadEvents() {
       tdEvent.textContent = ev.event;
       const tdDetails = document.createElement('td');
       tdDetails.textContent = JSON.stringify(ev.args);
-      tr.append(tdBlock, tdEvent, tdDetails);
+      const tdFinalized = document.createElement('td');
+      tdFinalized.textContent = ev.finalized ? 'yes' : 'no';
+      tr.append(tdBlock, tdEvent, tdDetails, tdFinalized);
       tbody.appendChild(tr);
     }
     if (!lines.length) {
       const tr = document.createElement('tr');
       const td = document.createElement('td');
-      td.colSpan = 3;
+      td.colSpan = 4;
       td.textContent = 'No events indexed yet';
       tr.appendChild(td);
       tbody.appendChild(tr);
@@ -41,7 +43,7 @@ async function loadEvents() {
   } catch (_) {
     const tr = document.createElement('tr');
     const td = document.createElement('td');
-    td.colSpan = 3;
+    td.colSpan = 4;
     td.textContent = 'No events indexed yet';
     tr.appendChild(td);
     tbody.appendChild(tr);
