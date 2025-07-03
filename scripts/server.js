@@ -83,7 +83,11 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  const idxPath = path.join(INDEXER_DIR, req.url.replace(/^\//, ''));
+  // Strip the /indexer/ prefix so requests map to files under INDEXER_DIR
+  const idxPath = path.join(
+    INDEXER_DIR,
+    req.url.replace(/^\/indexer\//, '')
+  );
   if (idxPath.startsWith(INDEXER_DIR) && fs.existsSync(idxPath)) {
     serveFile(res, idxPath);
     return;
