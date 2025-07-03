@@ -4,7 +4,14 @@ const path = require("path");
 const artifact = require("../artifacts/contracts/BatchToken.sol/BatchToken.json");
 
 const PROVIDER_URL = process.env.PROVIDER_URL || "http://localhost:8545";
-const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
+const ADDRESS_FILE = path.join(__dirname, "..", "address.txt");
+let CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
+if (!CONTRACT_ADDRESS) {
+  try {
+    CONTRACT_ADDRESS = fs.readFileSync(ADDRESS_FILE, "utf8").trim();
+    console.log("Using contract address from", ADDRESS_FILE);
+  } catch (_) {}
+}
 const EVENT_NAME = process.env.EVENT_NAME || "TransferProposed";
 // How many blocks the indexer waits before persisting a checkpoint.
 // Default is 0 so new events are indexed immediately.
@@ -104,7 +111,9 @@ async function formatEvents(logs, provider, finalizedBlock) {
 
 async function main() {
   if (!CONTRACT_ADDRESS) {
-    console.error("CONTRACT_ADDRESS env var is required");
+    console.error(
+      "CONTRACT_ADDRESS env var is required (or provide address.txt)"
+    );
     process.exit(1);
   }
 
