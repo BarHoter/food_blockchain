@@ -65,3 +65,9 @@ document.getElementById('btnStatus').onclick = async () => {
   const s = await contract.status(id);
   document.getElementById('statusOutput').textContent = s.toString();
 };
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.CONTRACT_ADDRESS) {
+    document.getElementById('contractAddress').value = window.CONTRACT_ADDRESS;
+  }
+});

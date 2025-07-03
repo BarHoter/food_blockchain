@@ -7,6 +7,18 @@ const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 const INDEXER_DIR = path.join(__dirname, '..', 'indexer');
 const PORT = process.env.PORT || 8080;
 
+function serveConfig(res) {
+  res.writeHead(200, { 'Content-Type': 'application/javascript' });
+  const addr = process.env.CONTRACT_ADDRESS || '';
+  res.end(`window.CONTRACT_ADDRESS = '${addr}';`);
+}
+
+if (!process.env.CONTRACT_ADDRESS) {
+  console.warn(
+    'CONTRACT_ADDRESS env var is required for the dashboard refresh to work'
+  );
+}
+
 function mime(file) {
   if (file.endsWith('.html')) return 'text/html';
   if (file.endsWith('.js')) return 'application/javascript';
@@ -28,7 +40,18 @@ function serveFile(res, filePath) {
 }
 
 const server = http.createServer((req, res) => {
+  if (req.method === 'GET' && req.url === '/config.js') {
+    serveConfig(res);
+    return;
+  }
   if (req.method === 'POST' && req.url === '/api/refresh') {
+    if (!process.env.CONTRACT_ADDRESS) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify({ ok: false, error: 'CONTRACT_ADDRESS not set' })
+      );
+      return;
+    }
     const child = spawn(process.execPath, [path.join(__dirname, 'indexer.js')], {
       env: process.env,
       stdio: 'inherit',

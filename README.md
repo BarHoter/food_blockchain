@@ -91,12 +91,16 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
    npx hardhat run scripts/deploy.js --network localhost
    ```
    Copy the deployed contract address from the output.
-4. Start the built-in server which hosts the frontend and exposes an API to run the indexer:
+4. Start the built-in server with the contract address so the dashboard can run the indexer:
    ```bash
-   npm run serve
+   CONTRACT_ADDRESS=<address> npm run serve
    ```
-5. Open `http://localhost:8080` in a browser (Chrome with MetaMask recommended).
-   Connect your wallet, paste the contract address and interact using the buttons.
+   The frontend is served at `http://localhost:8080` and the dashboard at
+   `http://localhost:8080/dashboard.html`.
+   If `CONTRACT_ADDRESS` is set, the address field in the UI is pre-filled.
+5. Open `http://localhost:8080` in a browser (Chrome with MetaMask recommended)
+   to interact with the contract.
+6. Visit `http://localhost:8080/dashboard.html` to view indexed events.
 
 The UI uses Ethers.js via CDN, so no additional build steps are required.
 
@@ -123,4 +127,7 @@ Optional environment variables:
 The indexer will delete `events.json` and `checkpoint.json` if the current
 `CONTRACT_ADDRESS` does not match what is stored in the checkpoint.
 
-The dashboard is available at `http://localhost:8080/dashboard.html` when running `npm run serve`. Use the **Refresh Index** button to run the indexer on demand or enable **Auto refresh** for periodic indexing.
+The dashboard is available at `http://localhost:8080/dashboard.html` when running
+`npm run serve`. Make sure `CONTRACT_ADDRESS` is set or the **Refresh Index**
+button will fail. Use the button to run the indexer on demand or enable **Auto
+refresh** for periodic indexing.
