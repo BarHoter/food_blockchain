@@ -62,13 +62,25 @@ async function resetIndex() {
   } catch (_) {}
 }
 
-async function writeEvents(events) {
-  if (!events.length) return;
+async function loadEvents() {
+  try {
+    const text = await fs.promises.readFile(EVENTS_FILE, "utf8");
+    return text
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+  } catch (_) {
+    return [];
+  }
+}
+
+async function saveEvents(events) {
   await fs.promises.mkdir(OUT_DIR, { recursive: true });
   const lines = events.map((e) =>
     JSON.stringify(e, (k, v) => (typeof v === "bigint" ? v.toString() : v))
   );
-  await fs.promises.appendFile(EVENTS_FILE, lines.join("\n") + "\n");
+  await fs.promises.writeFile(EVENTS_FILE, lines.join("\n") + "\n");
 }
 
 async function fetchEvents(contract, fromBlock, toBlock) {
@@ -136,12 +148,22 @@ async function main() {
   const toBlock = latestBlock - FINALITY_LAG;
   const finalizedBlock = latestBlock - FINALITY_THRESHOLD;
 
+  let allEvents = await loadEvents();
+  let changed = false;
+  for (const ev of allEvents) {
+    if (!ev.finalized && ev.blockNumber <= finalizedBlock) {
+      ev.finalized = true;
+      changed = true;
+    }
+  }
+
   const checkpoint = contractAddress && contractAddress.toLowerCase() === CONTRACT_ADDRESS.toLowerCase() ? lastIndexedBlock : 0;
 
   if (toBlock <= checkpoint) {
     console.log(
       `No new blocks to index. latest=${latestBlock} checkpoint=${checkpoint}`
     );
+    if (changed) await saveEvents(allEvents);
     return;
   }
 
@@ -150,13 +172,15 @@ async function main() {
 
   if (logs.length === 0) {
     console.log(`No events found. Advancing checkpoint to ${toBlock}`);
+    if (changed) await saveEvents(allEvents);
     await saveCheckpoint(toBlock);
     return;
   }
 
-  const events = await formatEvents(logs, provider, finalizedBlock);
-  await writeEvents(events);
-  console.log(`Indexed ${events.length} events up to block ${toBlock}`);
+  const newEvents = await formatEvents(logs, provider, finalizedBlock);
+  allEvents = allEvents.concat(newEvents);
+  await saveEvents(allEvents);
+  console.log(`Indexed ${newEvents.length} events up to block ${toBlock}`);
   await saveCheckpoint(toBlock);
 }
 
