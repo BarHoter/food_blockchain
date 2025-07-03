@@ -91,17 +91,12 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
    npx hardhat run scripts/deploy.js --network localhost
    ```
    Copy the deployed contract address from the output.
-4. Serve the `frontend/` directory with any static HTTP server (MetaMask does not
-   inject `window.ethereum` on `file:` URLs). For example:
+4. Start the built-in server which hosts the frontend and exposes an API to run the indexer:
    ```bash
-   npx http-server frontend -p 8080
-   # or
-   python3 -m http.server 8080 --directory frontend
+   npm run serve
    ```
 5. Open `http://localhost:8080` in a browser (Chrome with MetaMask recommended).
    Connect your wallet, paste the contract address and interact using the buttons.
-4. Open `frontend/index.html` in a browser (Chrome with MetaMask recommended).
-5. Connect your wallet, paste the contract address and interact using the buttons.
 
 The UI uses Ethers.js via CDN, so no additional build steps are required.
 
@@ -128,4 +123,4 @@ Optional environment variables:
 The indexer will delete `events.json` and `checkpoint.json` if the current
 `CONTRACT_ADDRESS` does not match what is stored in the checkpoint.
 
-A simple dashboard is available at `frontend/dashboard.html`. Serve the repository root so the `indexer` folder is accessible and open the page to view indexed events.
+The dashboard is available at `http://localhost:8080/dashboard.html` when running `npm run serve`. Use the **Refresh Index** button to run the indexer on demand or enable **Auto refresh** for periodic indexing.
