@@ -90,11 +90,12 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
    ```bash
    npx hardhat run scripts/deploy.js --network localhost
    ```
-   Copy the deployed contract address from the output.
-4. Start the built-in server with the contract address so the dashboard can run the indexer:
+   The deployment script writes the address to `address.txt`.
+4. Start the built-in server so the dashboard can run the indexer:
    ```bash
-   CONTRACT_ADDRESS=<address> npm run serve
+   npm run serve
    ```
+   Pass `CONTRACT_ADDRESS=<address>` to override the saved address.
    The frontend is served at `http://localhost:8080` and the dashboard at
    `http://localhost:8080/dashboard`.
    If `CONTRACT_ADDRESS` is set, the address field in the UI is pre-filled.

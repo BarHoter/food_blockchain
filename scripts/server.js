@@ -6,6 +6,17 @@ const { spawn } = require('child_process');
 const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 const INDEXER_DIR = path.join(__dirname, '..', 'indexer');
 const PORT = process.env.PORT || 8080;
+const ADDRESS_FILE = path.join(__dirname, '..', 'address.txt');
+
+if (!process.env.CONTRACT_ADDRESS) {
+  try {
+    const addr = fs.readFileSync(ADDRESS_FILE, 'utf8').trim();
+    if (addr) {
+      process.env.CONTRACT_ADDRESS = addr;
+      console.log('Using contract address from', ADDRESS_FILE);
+    }
+  } catch (_) {}
+}
 
 function serveConfig(res) {
   res.writeHead(200, { 'Content-Type': 'application/javascript' });
@@ -15,7 +26,7 @@ function serveConfig(res) {
 
 if (!process.env.CONTRACT_ADDRESS) {
   console.warn(
-    'CONTRACT_ADDRESS env var is required for the dashboard refresh to work'
+    'CONTRACT_ADDRESS env var is required for the dashboard refresh to work (or place the address in address.txt)'
   );
 }
 
