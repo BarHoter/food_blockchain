@@ -12,6 +12,7 @@ async function loadCheckpoint() {
 
 async function loadEvents() {
   const tbody = document.querySelector('#eventsTable tbody');
+  tbody.innerHTML = '';
   try {
     const res = await fetch('../indexer/events.json');
     if (!res.ok) throw new Error('missing events');
@@ -48,6 +49,21 @@ async function loadEvents() {
 }
 
 window.addEventListener('load', () => {
+  document.getElementById('refreshBtn').onclick = runIndexer;
+  const auto = document.getElementById('autoRefresh');
+  let timer;
+  auto.onchange = () => {
+    clearInterval(timer);
+    if (auto.checked) {
+      timer = setInterval(runIndexer, 5000);
+    }
+  };
   loadCheckpoint();
   loadEvents();
 });
+
+async function runIndexer() {
+  await fetch('/api/refresh', { method: 'POST' });
+  await loadCheckpoint();
+  await loadEvents();
+}
