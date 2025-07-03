@@ -6,7 +6,12 @@ const artifact = require("../artifacts/contracts/BatchToken.sol/BatchToken.json"
 const PROVIDER_URL = process.env.PROVIDER_URL || "http://localhost:8545";
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 const EVENT_NAME = process.env.EVENT_NAME || "TransferProposed";
-const FINALITY_LAG = parseInt(process.env.FINALITY_LAG || "6", 10);
+// How many blocks the indexer waits before persisting a checkpoint.
+// Default is 0 so new events are indexed immediately.
+const FINALITY_LAG = parseInt(process.env.FINALITY_LAG || "0", 10);
+// Number of blocks after which an event is considered finalized. This is only
+// used for tagging events and does not affect checkpointing.
+const FINALITY_THRESHOLD = parseInt(process.env.FINALITY_THRESHOLD || "6", 10);
 
 const OUT_DIR = path.join(__dirname, "..", "indexer");
 const CHECKPOINT_FILE = path.join(OUT_DIR, "checkpoint.json");
@@ -78,7 +83,7 @@ async function fetchEvents(contract, fromBlock, toBlock) {
   }
 }
 
-async function formatEvents(logs, provider) {
+async function formatEvents(logs, provider, finalizedBlock) {
   const events = [];
   for (const log of logs) {
     const block = await provider.getBlock(log.blockNumber);
@@ -91,6 +96,7 @@ async function formatEvents(logs, provider) {
       blockTimestamp: block.timestamp,
       transactionHash: log.transactionHash,
       logIndex: log.logIndex,
+      finalized: log.blockNumber <= finalizedBlock,
     });
   }
   return events;
@@ -119,12 +125,13 @@ async function main() {
 
   const latestBlock = await provider.getBlockNumber();
   const toBlock = latestBlock - FINALITY_LAG;
+  const finalizedBlock = latestBlock - FINALITY_THRESHOLD;
 
   const checkpoint = contractAddress && contractAddress.toLowerCase() === CONTRACT_ADDRESS.toLowerCase() ? lastIndexedBlock : 0;
 
   if (toBlock <= checkpoint) {
     console.log(
-      `No new finalized blocks. latest=${latestBlock} checkpoint=${checkpoint}`
+      `No new blocks to index. latest=${latestBlock} checkpoint=${checkpoint}`
     );
     return;
   }
@@ -138,7 +145,7 @@ async function main() {
     return;
   }
 
-  const events = await formatEvents(logs, provider);
+  const events = await formatEvents(logs, provider, finalizedBlock);
   await writeEvents(events);
   console.log(`Indexed ${events.length} events up to block ${toBlock}`);
   await saveCheckpoint(toBlock);
