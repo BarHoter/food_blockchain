@@ -96,11 +96,11 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
    CONTRACT_ADDRESS=<address> npm run serve
    ```
    The frontend is served at `http://localhost:8080` and the dashboard at
-   `http://localhost:8080/dashboard.html`.
+   `http://localhost:8080/dashboard`.
    If `CONTRACT_ADDRESS` is set, the address field in the UI is pre-filled.
 5. Open `http://localhost:8080` in a browser (Chrome with MetaMask recommended)
    to interact with the contract.
-6. Visit `http://localhost:8080/dashboard.html` to view indexed events.
+6. Visit `http://localhost:8080/dashboard` to view indexed events.
 
 The UI uses Ethers.js via CDN, so no additional build steps are required.
 
@@ -127,7 +127,7 @@ Optional environment variables:
 The indexer will delete `events.json` and `checkpoint.json` if the current
 `CONTRACT_ADDRESS` does not match what is stored in the checkpoint.
 
-The dashboard is available at `http://localhost:8080/dashboard.html` when running
+The dashboard is available at `http://localhost:8080/dashboard` when running
 `npm run serve`. Make sure `CONTRACT_ADDRESS` is set or the **Refresh Index**
 button will fail. Use the button to run the indexer on demand or enable **Auto
 refresh** for periodic indexing.
