@@ -128,8 +128,9 @@ Optional environment variables:
   when tagged in `events.json` (default: `6`)
 
 Each entry in `events.json` now includes a `finalized` boolean that reflects
-whether the event has surpassed `FINALITY_THRESHOLD` blocks at the time of
-indexing.
+whether the event has surpassed `FINALITY_THRESHOLD` blocks. The indexer rewrites
+previous entries on each run so older events become finalized once enough blocks
+have passed.
 
 The indexer will delete `events.json` and `checkpoint.json` if the current
 `CONTRACT_ADDRESS` does not match what is stored in the checkpoint.
