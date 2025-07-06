@@ -107,7 +107,8 @@ async function formatEvents(logs, provider, finalizedBlock) {
   for (const log of logs) {
     const block = await provider.getBlock(log.blockNumber);
     events.push({
-      event: log.event,
+      // ethers v5 uses `event` while v6 switched to `name`
+      event: log.event || log.name,
       args: Object.fromEntries(
         Object.entries(log.args || {}).filter(([k]) => isNaN(k))
       ),
