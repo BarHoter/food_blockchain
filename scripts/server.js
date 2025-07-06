@@ -35,6 +35,7 @@ function mime(file) {
   if (file.endsWith('.js')) return 'application/javascript';
   if (file.endsWith('.css')) return 'text/css';
   if (file.endsWith('.json')) return 'application/json';
+  if (file.endsWith('.csv')) return 'text/csv';
   return 'text/plain';
 }
 

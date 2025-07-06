@@ -21,7 +21,8 @@
     <div id="contractControls" style="display:none;">
       <h3>Propose Transfer</h3>
       <input id="proposeBatchId" placeholder="Batch ID" type="number" />
-      <input id="proposeTo" placeholder="Recipient" size="42" />
+      <input id="proposeTo" placeholder="Recipient" size="42" list="contactsList" />
+      <datalist id="contactsList"></datalist>
       <input id="proposeShipDate" placeholder="Ship date" type="datetime-local" />
       <button id="btnPropose">Propose</button>
 
