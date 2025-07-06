@@ -35,6 +35,7 @@ document.getElementById('loadContract').onclick = () => {
   statusEl.textContent = 'Contract loaded';
   statusEl.style.color = 'green';
   document.getElementById('contractControls').style.display = 'block';
+  updateSelects();
 };
 
 document.getElementById('btnPropose').onclick = async () => {
@@ -49,21 +50,25 @@ document.getElementById('btnPropose').onclick = async () => {
     }
   }
   await contract.proposeTransfer(id, to, ts);
+  await updateSelects();
 };
 
 document.getElementById('btnConfirm').onclick = async () => {
   const id = document.getElementById('confirmBatchId').value;
   await contract.confirmTransfer(id);
+  await updateSelects();
 };
 
 document.getElementById('btnShip').onclick = async () => {
   const id = document.getElementById('shipBatchId').value;
   await contract.shipBatch(id);
+  await updateSelects();
 };
 
 document.getElementById('btnReceive').onclick = async () => {
   const id = document.getElementById('receiveBatchId').value;
   await contract.receiveBatch(id);
+  await updateSelects();
 };
 
 document.getElementById('btnStatus').onclick = async () => {
@@ -77,6 +82,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('contractAddress').value = window.CONTRACT_ADDRESS;
   }
   loadContacts();
+  if (contract) updateSelects();
 });
 
 async function loadContacts() {
@@ -97,5 +103,25 @@ async function loadContacts() {
     }
   } catch (err) {
     console.error('failed to load contacts', err);
+  }
+}
+
+async function updateSelects() {
+  if (!contract) return;
+  const confirmSel = document.getElementById('confirmBatchId');
+  const shipSel = document.getElementById('shipBatchId');
+  const receiveSel = document.getElementById('receiveBatchId');
+  await populateSelect(confirmSel, await contract.batchesInStatus(1));
+  await populateSelect(shipSel, await contract.batchesInStatus(2));
+  await populateSelect(receiveSel, await contract.batchesInStatus(3));
+}
+
+async function populateSelect(sel, values) {
+  sel.innerHTML = '';
+  for (const v of values) {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v.toString();
+    sel.appendChild(opt);
   }
 }
