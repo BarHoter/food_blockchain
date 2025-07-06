@@ -82,16 +82,13 @@ async function loadContacts() {
       const [name, addr] = l.split(',');
       return { name: name.trim(), addr: addr.trim() };
     });
-    const toSel = document.getElementById('contactSelect');
+    const list = document.getElementById('contactsList');
     for (const c of contacts) {
       const opt = document.createElement('option');
       opt.value = c.addr;
       opt.textContent = c.name;
-      toSel.appendChild(opt);
+      list.appendChild(opt);
     }
-    toSel.onchange = () => {
-      document.getElementById('proposeTo').value = toSel.value;
-    };
   } catch (err) {
     console.error('failed to load contacts', err);
   }
