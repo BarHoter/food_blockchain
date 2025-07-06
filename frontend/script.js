@@ -82,19 +82,13 @@ async function loadContacts() {
       const [name, addr] = l.split(',');
       return { name: name.trim(), addr: addr.trim() };
     });
-    const contractSel = document.getElementById('contractSelect');
     const toSel = document.getElementById('contactSelect');
     for (const c of contacts) {
-      const opt1 = document.createElement('option');
-      opt1.value = c.addr;
-      opt1.textContent = c.name;
-      contractSel.appendChild(opt1.cloneNode(true));
-      const opt2 = opt1.cloneNode(true);
-      toSel.appendChild(opt2);
+      const opt = document.createElement('option');
+      opt.value = c.addr;
+      opt.textContent = c.name;
+      toSel.appendChild(opt);
     }
-    contractSel.onchange = () => {
-      document.getElementById('contractAddress').value = contractSel.value;
-    };
     toSel.onchange = () => {
       document.getElementById('proposeTo').value = toSel.value;
     };
