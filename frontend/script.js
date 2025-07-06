@@ -70,4 +70,35 @@ window.addEventListener('DOMContentLoaded', () => {
   if (window.CONTRACT_ADDRESS) {
     document.getElementById('contractAddress').value = window.CONTRACT_ADDRESS;
   }
+  loadContacts();
 });
+
+async function loadContacts() {
+  try {
+    const res = await fetch('contacts.csv');
+    const text = await res.text();
+    const lines = text.trim().split('\n').slice(1); // skip header
+    const contacts = lines.map(l => {
+      const [name, addr] = l.split(',');
+      return { name: name.trim(), addr: addr.trim() };
+    });
+    const contractSel = document.getElementById('contractSelect');
+    const toSel = document.getElementById('contactSelect');
+    for (const c of contacts) {
+      const opt1 = document.createElement('option');
+      opt1.value = c.addr;
+      opt1.textContent = c.name;
+      contractSel.appendChild(opt1.cloneNode(true));
+      const opt2 = opt1.cloneNode(true);
+      toSel.appendChild(opt2);
+    }
+    contractSel.onchange = () => {
+      document.getElementById('contractAddress').value = contractSel.value;
+    };
+    toSel.onchange = () => {
+      document.getElementById('proposeTo').value = toSel.value;
+    };
+  } catch (err) {
+    console.error('failed to load contacts', err);
+  }
+}
