@@ -41,7 +41,13 @@ document.getElementById('btnPropose').onclick = async () => {
   const id = document.getElementById('proposeBatchId').value;
   const to = document.getElementById('proposeTo').value;
   const dateStr = document.getElementById('proposeShipDate').value;
-  const ts = Math.floor(new Date(dateStr).getTime() / 1000);
+  let ts = 0;
+  if (dateStr) {
+    const ms = new Date(dateStr).getTime();
+    if (Number.isFinite(ms)) {
+      ts = Math.floor(ms / 1000);
+    }
+  }
   await contract.proposeTransfer(id, to, ts);
 };
 
