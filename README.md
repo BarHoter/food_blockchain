@@ -58,6 +58,11 @@ await token.receiveBatch(1);
 ```
 
 Each step emits an event that can be indexed off chain.
+The contract keeps track of batch ids for each of the four statuses
+(`Proposed`, `Confirmed`, `Shipped`, `Received`).
+Call `batchesInStatus(uint8 status)` to retrieve the ids currently in a given
+status. The frontend uses this to populate the dropdowns for confirming,
+shipping and receiving.
 See **AGENTS.md** for a list of all agents and their roles.
 
 ## Testing

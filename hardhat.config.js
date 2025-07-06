@@ -34,6 +34,13 @@ if (OPT_GOERLI_RPC && PRIVATE_KEY) {
 }
 
 module.exports = {
-  solidity: "0.8.20",
+  solidity: {
+    compilers: [
+      {
+        version: "0.8.20",
+        compilerPath: "./compiler/soljson-v0.8.20.js"
+      }
+    ]
+  },
   networks
 };
