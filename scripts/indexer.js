@@ -102,6 +102,15 @@ async function fetchEvents(contract, fromBlock, toBlock) {
   }
 }
 
+async function extractArgs(log) {
+  const named = {};
+  const inputs = (log.fragment && log.fragment.inputs) || [];
+  for (let i = 0; i < inputs.length; i++) {
+    named[inputs[i].name] = log.args[i];
+  }
+  return named;
+}
+
 async function formatEvents(logs, provider, finalizedBlock) {
   const events = [];
   for (const log of logs) {
@@ -109,9 +118,7 @@ async function formatEvents(logs, provider, finalizedBlock) {
     events.push({
       // ethers v5 uses `event` while v6 switched to `name`
       event: log.event || log.name,
-      args: Object.fromEntries(
-        Object.entries(log.args || {}).filter(([k]) => isNaN(k))
-      ),
+      args: await extractArgs(log),
       blockNumber: log.blockNumber,
       blockTimestamp: block.timestamp,
       transactionHash: log.transactionHash,
