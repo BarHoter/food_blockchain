@@ -95,6 +95,11 @@ function App(): JSX.Element {
       alert('Invalid batch ID or recipient address');
       return;
     }
+    const from = (await signer!.getAddress()).toLowerCase();
+    if (to.toLowerCase() === from) {
+      alert('Recipient must be different from sender');
+      return;
+    }
     const dateStr = (document.getElementById('proposeShipDate') as HTMLInputElement).value;
     let ts = 0;
     if (dateStr) {
