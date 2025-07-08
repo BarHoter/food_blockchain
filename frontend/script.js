@@ -49,25 +49,29 @@ document.getElementById('btnPropose').onclick = async () => {
       ts = Math.floor(ms / 1000);
     }
   }
-  await contract.proposeTransfer(id, to, ts);
+  const tx = await contract.proposeTransfer(id, to, ts);
+  await tx.wait();
   await updateSelects();
 };
 
 document.getElementById('btnConfirm').onclick = async () => {
   const id = document.getElementById('confirmBatchId').value;
-  await contract.confirmTransfer(id);
+  const tx = await contract.confirmTransfer(id);
+  await tx.wait();
   await updateSelects();
 };
 
 document.getElementById('btnShip').onclick = async () => {
   const id = document.getElementById('shipBatchId').value;
-  await contract.shipBatch(id);
+  const tx = await contract.shipBatch(id);
+  await tx.wait();
   await updateSelects();
 };
 
 document.getElementById('btnReceive').onclick = async () => {
   const id = document.getElementById('receiveBatchId').value;
-  await contract.receiveBatch(id);
+  const tx = await contract.receiveBatch(id);
+  await tx.wait();
   await updateSelects();
 };
 
