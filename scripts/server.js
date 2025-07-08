@@ -8,6 +8,8 @@ const INDEXER_DIR = path.join(__dirname, '..', 'indexer');
 const PORT = process.env.PORT || 8080;
 const ADDRESS_FILE = path.join(__dirname, '..', 'address.txt');
 
+let indexerRunning = false;
+
 if (!process.env.CONTRACT_ADDRESS) {
   try {
     const addr = fs.readFileSync(ADDRESS_FILE, 'utf8').trim();
@@ -64,11 +66,18 @@ const server = http.createServer((req, res) => {
       );
       return;
     }
+    if (indexerRunning) {
+      res.writeHead(409, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'indexer running' }));
+      return;
+    }
+    indexerRunning = true;
     const child = spawn(process.execPath, [path.join(__dirname, 'indexer.js')], {
       env: process.env,
       stdio: 'inherit',
     });
     child.on('close', (code) => {
+      indexerRunning = false;
       res.writeHead(code === 0 ? 200 : 500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: code === 0 }));
     });
