@@ -35,6 +35,8 @@ if (!process.env.CONTRACT_ADDRESS) {
 function mime(file) {
   if (file.endsWith('.html')) return 'text/html';
   if (file.endsWith('.js')) return 'application/javascript';
+  if (file.endsWith('.jsx')) return 'application/javascript';
+  if (file.endsWith('.tsx')) return 'application/javascript';
   if (file.endsWith('.css')) return 'text/css';
   if (file.endsWith('.json')) return 'application/json';
   if (file.endsWith('.csv')) return 'text/csv';

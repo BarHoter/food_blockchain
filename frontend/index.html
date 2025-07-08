@@ -4,49 +4,18 @@
   <meta charset="UTF-8">
   <title>BatchToken Frontend</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
   <h1>BatchToken Demo</h1>
   <main>
-    <button id="connect">Connect Wallet</button>
-
-    <div id="controls" style="display:none;">
-      <label>Contract Address:
-        <input id="contractAddress" placeholder="0x..." size="42" />
-      </label>
-      <button id="loadContract">Load Contract</button>
-      <span id="contractStatus"></span>
-    </div>
-
-    <div id="contractControls" style="display:none;">
-      <h3>Propose Transfer</h3>
-      <input id="proposeBatchId" placeholder="Batch ID" type="number" />
-      <input id="proposeTo" placeholder="Recipient" size="42" list="contactsList" />
-      <datalist id="contactsList"></datalist>
-      <input id="proposeShipDate" placeholder="Ship date" type="datetime-local" />
-      <button id="btnPropose">Propose</button>
-
-      <h3>Confirm Transfer</h3>
-      <select id="confirmBatchId"></select>
-      <button id="btnConfirm">Confirm</button>
-
-      <h3>Ship Batch</h3>
-      <select id="shipBatchId"></select>
-      <button id="btnShip">Ship</button>
-
-      <h3>Receive Batch</h3>
-      <select id="receiveBatchId"></select>
-      <button id="btnReceive">Receive</button>
-
-      <h3>Check Status</h3>
-      <input id="statusBatchId" placeholder="Batch ID" type="number" />
-      <button id="btnStatus">Get Status</button>
-      <pre id="statusOutput"></pre>
-    </div>
-
+    <div id="root"></div>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.14.1/dist/ethers.umd.min.js"></script>
     <script src="config.js"></script>
-    <script src="script.js"></script>
+    <script src="abi.js"></script>
+    <script type="text/babel" data-presets="typescript,react" src="app.tsx"></script>
   </main>
 </body>
 </html>
