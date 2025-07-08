@@ -57,7 +57,16 @@ document.getElementById('loadContract').onclick = () => {
 
 document.getElementById('btnPropose').onclick = async () => {
   const id = document.getElementById('proposeBatchId').value;
-  const to = document.getElementById('proposeTo').value;
+  const to = document.getElementById('proposeTo').value.trim();
+  if (!ethers.isAddress(to)) {
+    alert('Invalid recipient address');
+    return;
+  }
+  const from = (await signer.getAddress()).toLowerCase();
+  if (to.toLowerCase() === from) {
+    alert('Recipient must be different from sender');
+    return;
+  }
   const dateStr = document.getElementById('proposeShipDate').value;
   let ts = 0;
   if (dateStr) {
