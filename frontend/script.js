@@ -24,7 +24,14 @@ document.getElementById('loadContract').onclick = () => {
     return;
   }
   const tmp = new ethers.Contract(addr, abi, signer);
-  const required = ['proposeTransfer', 'confirmTransfer', 'shipBatch', 'receiveBatch', 'status'];
+  const required = [
+    'proposeTransfer',
+    'confirmTransfer',
+    'shipBatch',
+    'receiveBatch',
+    'status',
+    'batchesInStatus',
+  ];
   const ok = required.every(fn => typeof tmp[fn] === 'function');
   if (!ok) {
     statusEl.textContent = 'Contract mismatch';

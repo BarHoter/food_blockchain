@@ -112,9 +112,16 @@ async function extractArgs(log) {
 }
 
 async function formatEvents(logs, provider, finalizedBlock) {
+  const blockNums = [...new Set(logs.map((l) => l.blockNumber))];
+  const blockMap = {};
+  await Promise.all(
+    blockNums.map(async (n) => {
+      blockMap[n] = await provider.getBlock(n);
+    })
+  );
   const events = [];
   for (const log of logs) {
-    const block = await provider.getBlock(log.blockNumber);
+    const block = blockMap[log.blockNumber];
     events.push({
       // ethers v5 uses `event` while v6 switched to `name`
       event: log.event || log.name,
