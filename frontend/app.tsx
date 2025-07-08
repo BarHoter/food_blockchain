@@ -80,43 +80,77 @@ function App(): JSX.Element {
   }
 
   async function proposeTransfer() {
-    const id = (document.getElementById('proposeBatchId') as HTMLInputElement).value;
-    const to = (document.getElementById('proposeTo') as HTMLInputElement).value;
+    if (!contract) return;
+    const idStr = (document.getElementById('proposeBatchId') as HTMLInputElement).value;
+    const to = (document.getElementById('proposeTo') as HTMLInputElement).value.trim();
+    if (!idStr || !ethers.isAddress(to)) {
+      alert('Invalid batch ID or recipient address');
+      return;
+    }
     const dateStr = (document.getElementById('proposeShipDate') as HTMLInputElement).value;
     let ts = 0;
     if (dateStr) {
       const ms = new Date(dateStr).getTime();
       if (Number.isFinite(ms)) ts = Math.floor(ms / 1000);
     }
-    const tx = await contract.proposeTransfer(id, to, ts);
-    await tx.wait();
-    updateSelects();
+    try {
+      const tx = await contract.proposeTransfer(idStr, to, ts);
+      await tx.wait();
+      updateSelects();
+    } catch (err: any) {
+      console.error('propose failed', err);
+      alert('Propose failed');
+    }
   }
 
   async function confirmTransfer() {
+    if (!contract) return;
     const id = (document.getElementById('confirmBatchId') as HTMLSelectElement).value;
-    const tx = await contract.confirmTransfer(id);
-    await tx.wait();
-    updateSelects();
+    try {
+      const tx = await contract.confirmTransfer(id);
+      await tx.wait();
+      updateSelects();
+    } catch (err: any) {
+      console.error('confirm failed', err);
+      alert('Confirm failed');
+    }
   }
 
   async function shipBatch() {
+    if (!contract) return;
     const id = (document.getElementById('shipBatchId') as HTMLSelectElement).value;
-    const tx = await contract.shipBatch(id);
-    await tx.wait();
-    updateSelects();
+    try {
+      const tx = await contract.shipBatch(id);
+      await tx.wait();
+      updateSelects();
+    } catch (err: any) {
+      console.error('ship failed', err);
+      alert('Ship failed');
+    }
   }
 
   async function receiveBatch() {
+    if (!contract) return;
     const id = (document.getElementById('receiveBatchId') as HTMLSelectElement).value;
-    const tx = await contract.receiveBatch(id);
-    await tx.wait();
-    updateSelects();
+    try {
+      const tx = await contract.receiveBatch(id);
+      await tx.wait();
+      updateSelects();
+    } catch (err: any) {
+      console.error('receive failed', err);
+      alert('Receive failed');
+    }
   }
 
   async function checkStatus() {
-    const s = await contract.status(statusId);
-    setStatusOutput(s.toString());
+    if (!contract) return;
+    try {
+      const s = await contract.status(statusId);
+      setStatusOutput(s.toString());
+    } catch (err: any) {
+      console.error('status failed', err);
+      alert('Failed to fetch status');
+    }
   }
 
   async function updateSelects() {
