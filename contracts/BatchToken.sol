@@ -57,6 +57,7 @@ contract BatchToken {
         // Sender becomes the originator of the batch and cannot be changed
         // until the lifecycle completes.
         require(status[batchId] == Status.None, "already initiated"); // Guard: must be new
+        require(to != msg.sender, "invalid recipient");
         senderOf[batchId] = msg.sender;
         recipientOf[batchId] = to;
         status[batchId] = Status.Proposed;
