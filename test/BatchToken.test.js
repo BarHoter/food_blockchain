@@ -26,15 +26,15 @@ describe("BatchToken", function () {
             .to.emit(token, "TransferProposed")
             .withArgs(1, owner.address, addr1.address, 0);
 
-        await expect(token.confirmTransfer(1))
+        await expect(token.connect(addr1).confirmTransfer(1))
             .to.emit(token, "TransferConfirmed")
-            .withArgs(1, owner.address);
+            .withArgs(1, addr1.address);
 
         await expect(token.shipBatch(1))
             .to.emit(token, "BatchShipped")
             .withArgs(1);
 
-        await expect(token.receiveBatch(1))
+        await expect(token.connect(addr1).receiveBatch(1))
             .to.emit(token, "BatchReceived")
             .withArgs(1);
     });
@@ -50,9 +50,31 @@ describe("BatchToken", function () {
         await expect(token.shipBatch(2)).to.be.revertedWith("not confirmed");
         await expect(token.receiveBatch(2)).to.be.revertedWith("not shipped");
 
-        await token.confirmTransfer(2);
-        await expect(token.confirmTransfer(2)).to.be.revertedWith("not proposed");
+        await expect(token.confirmTransfer(2)).to.be.revertedWith("only recipient");
+        await token.connect(addr1).confirmTransfer(2);
+        await expect(token.connect(addr1).confirmTransfer(2)).to.be.revertedWith(
+            "not proposed"
+        );
 
-        await expect(token.receiveBatch(2)).to.be.revertedWith("not shipped");
+        await expect(token.connect(addr1).receiveBatch(2)).to.be.revertedWith(
+            "not shipped"
+        );
+    });
+
+    it("enforces sender/recipient permissions", async () => {
+        await token.proposeTransfer(3, addr1.address, 0);
+
+        await expect(token.confirmTransfer(3)).to.be.revertedWith(
+            "only recipient"
+        );
+        await token.connect(addr1).confirmTransfer(3);
+
+        await expect(token.connect(addr1).shipBatch(3)).to.be.revertedWith(
+            "only sender"
+        );
+        await token.shipBatch(3);
+
+        await expect(token.receiveBatch(3)).to.be.revertedWith("only recipient");
+        await token.connect(addr1).receiveBatch(3);
     });
 });

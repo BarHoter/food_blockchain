@@ -57,12 +57,20 @@ await token.shipBatch(1);
 await token.receiveBatch(1);
 ```
 
-Each step emits an event that can be indexed off chain.
-The contract keeps track of batch ids for each of the four statuses
-(`Proposed`, `Confirmed`, `Shipped`, `Received`).
-Call `batchesInStatus(uint8 status)` to retrieve the ids currently in a given
-status. The frontend uses this to populate the dropdowns for confirming,
-shipping and receiving.
+Each step emits an event that can be indexed off chain. When a transfer is
+proposed the contract records the caller as the *sender* and the `to` address as
+the *recipient*. Subsequent lifecycle operations enforce that only the intended
+parties may progress the batch:
+
+- only the recorded recipient can confirm a proposal or mark the batch as
+  received
+- only the recorded sender can mark the batch as shipped
+
+The contract also keeps track of batch ids for each of the four statuses
+(`Proposed`, `Confirmed`, `Shipped`, `Received`). Call
+`batchesInStatus(uint8 status)` to retrieve the ids currently in a given status.
+The frontend uses this to populate the dropdowns for confirming, shipping and
+receiving.
 See **AGENTS.md** for a list of all agents and their roles.
 
 ## Testing
