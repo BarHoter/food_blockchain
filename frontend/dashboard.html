@@ -4,27 +4,15 @@
   <meta charset="UTF-8">
   <title>Indexer Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
   <h1>Indexer Dashboard</h1>
   <main>
-    <div>
-      <button id="refreshBtn">Refresh Index</button>
-      <label><input type="checkbox" id="autoRefresh"> Auto refresh</label>
-    </div>
-    <div id="checkpoint"></div>
-    <table id="eventsTable">
-      <thead>
-        <tr>
-          <th>Block</th>
-          <th>Event</th>
-          <th>Details</th>
-          <th>Finalized</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div id="root"></div>
+    <script type="text/babel" data-presets="typescript,react" src="dashboard.tsx"></script>
   </main>
-  <script src="dashboard.js"></script>
 </body>
 </html>
