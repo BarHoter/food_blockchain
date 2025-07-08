@@ -6,6 +6,14 @@ let provider;
 let signer;
 let contract;
 
+function parseError(err) {
+  if (!err) return 'Transaction failed';
+  if (err.shortMessage) return err.shortMessage;
+  if (err.error && err.error.message) return err.error.message;
+  if (err.message) return err.message;
+  return 'Transaction failed';
+}
+
 document.getElementById('connect').onclick = async () => {
   if (!window.ethereum) {
     alert('MetaMask not detected');
@@ -58,36 +66,61 @@ document.getElementById('btnPropose').onclick = async () => {
       ts = Math.floor(ms / 1000);
     }
   }
-  const tx = await contract.proposeTransfer(id, to, ts);
-  await tx.wait();
-  await updateSelects();
+  try {
+    const tx = await contract.proposeTransfer(id, to, ts);
+    await tx.wait();
+    await updateSelects();
+  } catch (err) {
+    console.error('propose failed', err);
+    alert(parseError(err));
+  }
 };
 
 document.getElementById('btnConfirm').onclick = async () => {
   const id = document.getElementById('confirmBatchId').value;
-  const tx = await contract.confirmTransfer(id);
-  await tx.wait();
-  await updateSelects();
+  try {
+    const tx = await contract.confirmTransfer(id);
+    await tx.wait();
+    await updateSelects();
+  } catch (err) {
+    console.error('confirm failed', err);
+    alert(parseError(err));
+  }
 };
 
 document.getElementById('btnShip').onclick = async () => {
   const id = document.getElementById('shipBatchId').value;
-  const tx = await contract.shipBatch(id);
-  await tx.wait();
-  await updateSelects();
+  try {
+    const tx = await contract.shipBatch(id);
+    await tx.wait();
+    await updateSelects();
+  } catch (err) {
+    console.error('ship failed', err);
+    alert(parseError(err));
+  }
 };
 
 document.getElementById('btnReceive').onclick = async () => {
   const id = document.getElementById('receiveBatchId').value;
-  const tx = await contract.receiveBatch(id);
-  await tx.wait();
-  await updateSelects();
+  try {
+    const tx = await contract.receiveBatch(id);
+    await tx.wait();
+    await updateSelects();
+  } catch (err) {
+    console.error('receive failed', err);
+    alert(parseError(err));
+  }
 };
 
-document.getElementById('btnStatus').onclick = async () => {
-  const id = document.getElementById('statusBatchId').value;
-  const s = await contract.status(id);
-  document.getElementById('statusOutput').textContent = s.toString();
+document.getElementById("btnStatus").onclick = async () => {
+  const id = document.getElementById("statusBatchId").value;
+  try {
+    const s = await contract.status(id);
+    document.getElementById("statusOutput").textContent = s.toString();
+  } catch (err) {
+    console.error("status failed", err);
+    alert(parseError(err));
+  }
 };
 
 window.addEventListener('DOMContentLoaded', () => {

@@ -27,6 +27,14 @@ function App(): JSX.Element {
   const [statusId, setStatusId] = useState<string>('');
   const [statusOutput, setStatusOutput] = useState<string>('');
 
+  function parseError(err: any): string {
+    if (!err) return 'Transaction failed';
+    if (err.shortMessage) return err.shortMessage;
+    if (err.error && err.error.message) return err.error.message;
+    if (err.message) return err.message;
+    return 'Transaction failed';
+  }
+
   useEffect(() => {
     fetch('contacts.csv')
       .then(res => res.text())
@@ -99,7 +107,7 @@ function App(): JSX.Element {
       updateSelects();
     } catch (err: any) {
       console.error('propose failed', err);
-      alert('Propose failed');
+      alert(parseError(err));
     }
   }
 
@@ -112,7 +120,7 @@ function App(): JSX.Element {
       updateSelects();
     } catch (err: any) {
       console.error('confirm failed', err);
-      alert('Confirm failed');
+      alert(parseError(err));
     }
   }
 
@@ -125,7 +133,7 @@ function App(): JSX.Element {
       updateSelects();
     } catch (err: any) {
       console.error('ship failed', err);
-      alert('Ship failed');
+      alert(parseError(err));
     }
   }
 
@@ -138,7 +146,7 @@ function App(): JSX.Element {
       updateSelects();
     } catch (err: any) {
       console.error('receive failed', err);
-      alert('Receive failed');
+      alert(parseError(err));
     }
   }
 
@@ -149,7 +157,7 @@ function App(): JSX.Element {
       setStatusOutput(s.toString());
     } catch (err: any) {
       console.error('status failed', err);
-      alert('Failed to fetch status');
+      alert(parseError(err));
     }
   }
 
