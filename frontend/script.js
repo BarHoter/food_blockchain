@@ -120,13 +120,36 @@ async function loadContacts() {
 }
 
 async function updateSelects() {
-  if (!contract) return;
+  if (!contract || !signer) return;
   const confirmSel = document.getElementById('confirmBatchId');
   const shipSel = document.getElementById('shipBatchId');
   const receiveSel = document.getElementById('receiveBatchId');
-  await populateSelect(confirmSel, await contract.batchesInStatus(1));
-  await populateSelect(shipSel, await contract.batchesInStatus(2));
-  await populateSelect(receiveSel, await contract.batchesInStatus(3));
+
+  const addr = (await signer.getAddress()).toLowerCase();
+
+  const proposed = await contract.batchesInStatus(1);
+  const confirmable = [];
+  for (const id of proposed) {
+    const rec = (await contract.recipientOf(id)).toLowerCase();
+    if (rec === addr) confirmable.push(id);
+  }
+  await populateSelect(confirmSel, confirmable);
+
+  const confirmed = await contract.batchesInStatus(2);
+  const shippable = [];
+  for (const id of confirmed) {
+    const from = (await contract.senderOf(id)).toLowerCase();
+    if (from === addr) shippable.push(id);
+  }
+  await populateSelect(shipSel, shippable);
+
+  const shipped = await contract.batchesInStatus(3);
+  const receivable = [];
+  for (const id of shipped) {
+    const rec = (await contract.recipientOf(id)).toLowerCase();
+    if (rec === addr) receivable.push(id);
+  }
+  await populateSelect(receiveSel, receivable);
 }
 
 async function populateSelect(sel, values) {

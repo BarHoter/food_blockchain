@@ -61,6 +61,12 @@ describe("BatchToken", function () {
         );
     });
 
+    it("rejects self transfer", async () => {
+        await expect(
+            token.proposeTransfer(99, owner.address, 0)
+        ).to.be.revertedWith("invalid recipient");
+    });
+
     it("enforces sender/recipient permissions", async () => {
         await token.proposeTransfer(3, addr1.address, 0);
 
