@@ -33,13 +33,39 @@ After each pull request is merged, a workflow uploads a snapshot of the repo to 
 
 ## Network configuration
 
-Deployment scripts rely on three optional environment variables:
+Deployment scripts rely on several optional environment variables
+(see `.env.example` for a template):
 
 - `PRIVATE_KEY` – private key of the deploying account
 - `ARB_GOERLI_RPC` – RPC endpoint for Arbitrum Goerli
 - `OPT_GOERLI_RPC` – RPC endpoint for Optimism Goerli
+- `INFURA_ETHERIUM_URL` – RPC endpoint for Sepolia via Infura
+- `INFURA_ETHERIUM_KEY` – private key for deploying to Sepolia
 
 When these variables are provided, the corresponding networks are made available in `hardhat.config.js`.
+
+### Local Hardhat network
+
+```
+npx hardhat node
+npx hardhat run scripts/deploy.js --network localhost
+```
+
+### Sepolia testnet
+
+Make sure `INFURA_ETHERIUM_URL` and `INFURA_ETHERIUM_KEY` are available as
+environment variables. A convenient way is to place them in a `.env` file:
+
+```
+INFURA_ETHERIUM_URL=https://sepolia.infura.io/v3/<project-id>
+INFURA_ETHERIUM_KEY=<private-key>
+```
+
+Then deploy using the configured network:
+
+```
+npx hardhat run scripts/deploy.js --network sepolia
+```
 
 ## Offline compilation
 
