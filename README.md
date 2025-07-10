@@ -39,8 +39,7 @@ Deployment scripts rely on several optional environment variables
 - `PRIVATE_KEY` – private key of the deploying account
 - `ARB_GOERLI_RPC` – RPC endpoint for Arbitrum Goerli
 - `OPT_GOERLI_RPC` – RPC endpoint for Optimism Goerli
-- `INFURA_ETHERIUM_URL` – RPC endpoint for Sepolia via Infura
-- `INFURA_ETHERIUM_KEY` – private key for deploying to Sepolia
+- `INFURA_PROJECT_ID` – Infura project id used to construct the Sepolia RPC URL
 
 When these variables are provided, the corresponding networks are made available in `hardhat.config.js`.
 
@@ -53,12 +52,12 @@ npx hardhat run scripts/deploy.js --network localhost
 
 ### Sepolia testnet
 
-Make sure `INFURA_ETHERIUM_URL` and `INFURA_ETHERIUM_KEY` are available as
+Make sure `INFURA_PROJECT_ID` and `PRIVATE_KEY` are available as
 environment variables. A convenient way is to place them in a `.env` file:
 
 ```
-INFURA_ETHERIUM_URL=https://sepolia.infura.io/v3/<project-id>
-INFURA_ETHERIUM_KEY=<private-key>
+INFURA_PROJECT_ID=<project-id>
+PRIVATE_KEY=<private-key>
 ```
 
 Then deploy using the configured network:

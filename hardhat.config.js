@@ -7,8 +7,7 @@ const {
   ARB_GOERLI_RPC,
   OPT_GOERLI_RPC,
   PRIVATE_KEY,
-  INFURA_ETHERIUM_URL,
-  INFURA_ETHERIUM_KEY
+  INFURA_PROJECT_ID
 } = process.env;
 
 // Always have a local Hardhat network
@@ -35,16 +34,16 @@ if (OPT_GOERLI_RPC && PRIVATE_KEY) {
   };
 }
 
-// Only add Sepolia if both RPC URL and key are present
+// Only add Sepolia if project id and private key are present
 if (
-  INFURA_ETHERIUM_URL &&
-  INFURA_ETHERIUM_KEY &&
-  INFURA_ETHERIUM_KEY.startsWith("0x") &&
-  INFURA_ETHERIUM_KEY.length === 66
+  INFURA_PROJECT_ID &&
+  PRIVATE_KEY &&
+  PRIVATE_KEY.startsWith("0x") &&
+  PRIVATE_KEY.length === 66
 ) {
   networks.sepolia = {
-    url: INFURA_ETHERIUM_URL,
-    accounts: [INFURA_ETHERIUM_KEY]
+    url: `https://sepolia.infura.io/v3/${INFURA_PROJECT_ID}`,
+    accounts: [PRIVATE_KEY]
   };
 }
 
