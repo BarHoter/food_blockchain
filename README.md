@@ -66,6 +66,9 @@ Then deploy using the configured network:
 npx hardhat run scripts/deploy.js --network sepolia
 ```
 
+If the `.env` file or any of the variables are missing, the Hardhat
+configuration will throw an error explaining what is required.
+
 ## Offline compilation
 
 A prebuilt copy of the Solidity `0.8.20` compiler is bundled under `compiler/soljson-v0.8.20.js`.
