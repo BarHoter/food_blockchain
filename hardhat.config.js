@@ -19,7 +19,19 @@ const {
   INFURA_PROJECT_ID
 } = process.env;
 
-const requestedNetwork = process.env.HARDHAT_NETWORK;
+// Hardhat sets HARDHAT_NETWORK too late for validation, so parse CLI args
+function getRequestedNetwork() {
+  const idx = process.argv.indexOf("--network");
+  if (idx !== -1 && process.argv.length > idx + 1) {
+    return process.argv[idx + 1];
+  }
+  const arg = process.argv.find(a => a.startsWith("--network="));
+  if (arg) return arg.split("=")[1];
+  return null;
+}
+
+const requestedNetwork = getRequestedNetwork();
+
 if (requestedNetwork) {
   const missing = [];
   if (!fs.existsSync(ENV_PATH)) missing.push(".env file");

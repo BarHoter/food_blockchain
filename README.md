@@ -67,7 +67,8 @@ npx hardhat run scripts/deploy.js --network sepolia
 ```
 
 If the `.env` file or any of the variables are missing, the Hardhat
-configuration will throw an error explaining what is required.
+configuration will throw an error explaining what is required. The
+deployment script performs the same check before attempting to deploy.
 
 ## Offline compilation
 
