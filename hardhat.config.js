@@ -31,6 +31,7 @@ function getRequestedNetwork() {
 }
 
 const requestedNetwork = getRequestedNetwork();
+
 if (requestedNetwork) {
   const missing = [];
   if (!fs.existsSync(ENV_PATH)) missing.push(".env file");
