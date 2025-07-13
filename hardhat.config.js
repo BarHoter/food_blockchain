@@ -79,15 +79,12 @@ if (OPT_GOERLI_RPC && PRIVATE_KEY) {
 }
 
 // Only add Sepolia if project id and private key are present
-if (
-  INFURA_PROJECT_ID &&
-  PRIVATE_KEY &&
-  PRIVATE_KEY.startsWith("0x") &&
-  PRIVATE_KEY.length === 66
-) {
+if (INFURA_PROJECT_ID && PRIVATE_KEY) {
+  // Ensure private key has 0x prefix
+  const sepoliaKey = PRIVATE_KEY.startsWith("0x") ? PRIVATE_KEY : `0x${PRIVATE_KEY}`;
   networks.sepolia = {
     url: `https://sepolia.infura.io/v3/${INFURA_PROJECT_ID}`,
-    accounts: [PRIVATE_KEY]
+    accounts: [sepoliaKey]
   };
 }
 
