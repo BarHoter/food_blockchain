@@ -29,6 +29,10 @@ function App(): JSX.Element {
   const [confirmable, setConfirmable] = useState<bigint[]>([]);
   const [shippable, setShippable] = useState<bigint[]>([]);
   const [receivable, setReceivable] = useState<bigint[]>([]);
+  const [proposed, setProposed] = useState<bigint[]>([]);
+  const [confirmed, setConfirmed] = useState<bigint[]>([]);
+  const [shipped, setShipped] = useState<bigint[]>([]);
+  const [received, setReceived] = useState<bigint[]>([]);
   const [statusId, setStatusId] = useState<string>('');
   const [statusOutput, setStatusOutput] = useState<string>('');
 
@@ -196,29 +200,35 @@ function App(): JSX.Element {
     if (!contract || !signer) return;
     const addr = (await signer.getAddress()).toLowerCase();
 
-    const proposed = await contract.batchesInStatus(1);
+    const proposedAll = await contract.batchesInStatus(1);
+    setProposed(proposedAll);
     const confirmableIds: bigint[] = [];
-    for (const id of proposed) {
+    for (const id of proposedAll) {
       const rec = (await contract.recipientOf(id)).toLowerCase();
       if (rec === addr) confirmableIds.push(id);
     }
     setConfirmable(confirmableIds);
 
-    const confirmed = await contract.batchesInStatus(2);
+    const confirmedAll = await contract.batchesInStatus(2);
+    setConfirmed(confirmedAll);
     const shippableIds: bigint[] = [];
-    for (const id of confirmed) {
+    for (const id of confirmedAll) {
       const from = (await contract.senderOf(id)).toLowerCase();
       if (from === addr) shippableIds.push(id);
     }
     setShippable(shippableIds);
 
-    const shipped = await contract.batchesInStatus(3);
+    const shippedAll = await contract.batchesInStatus(3);
+    setShipped(shippedAll);
     const receivableIds: bigint[] = [];
-    for (const id of shipped) {
+    for (const id of shippedAll) {
       const rec = (await contract.recipientOf(id)).toLowerCase();
       if (rec === addr) receivableIds.push(id);
     }
     setReceivable(receivableIds);
+
+    const receivedAll = await contract.batchesInStatus(4);
+    setReceived(receivedAll);
   }
 
   console.log("🛠️ confirmable IDs:", confirmable);
@@ -293,6 +303,26 @@ function App(): JSX.Element {
           />
           <button id="btnStatus" onClick={checkStatus}>Get Status</button>
           <pre id="statusOutput">{statusOutput}</pre>
+
+          <h3>All Batches By Status</h3>
+          <ul id="statusLists">
+            <li>
+              <strong>Proposed:</strong>{' '}
+              {proposed.length ? proposed.map(id => id.toString()).join(', ') : 'none'}
+            </li>
+            <li>
+              <strong>Confirmed:</strong>{' '}
+              {confirmed.length ? confirmed.map(id => id.toString()).join(', ') : 'none'}
+            </li>
+            <li>
+              <strong>Shipped:</strong>{' '}
+              {shipped.length ? shipped.map(id => id.toString()).join(', ') : 'none'}
+            </li>
+            <li>
+              <strong>Received:</strong>{' '}
+              {received.length ? received.map(id => id.toString()).join(', ') : 'none'}
+            </li>
+          </ul>
         </div>
       )}
     </>
