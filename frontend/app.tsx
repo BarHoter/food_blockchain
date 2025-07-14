@@ -1,6 +1,11 @@
-const { useState, useEffect } = React;
 
 declare const abi: any[];
+
+// Use globals loaded by index.html
+declare const React: any;
+declare const ReactDOM: any;
+const { useState, useEffect } = React;
+const ethers = (window as any).ethers;
 
 declare global {
   interface Window {
@@ -46,7 +51,7 @@ function App(): JSX.Element {
         });
         setContacts(cs);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -119,7 +124,8 @@ function App(): JSX.Element {
   async function confirmTransfer() {
     if (!contract) return;
     const id = (document.getElementById('confirmBatchId') as HTMLSelectElement).value;
-    if (id === '') {
+    console.log("🔍 confirmBatchId value:", id);
+    if (!id) {
       alert('Select a batch to confirm');
       return;
     }
@@ -136,7 +142,8 @@ function App(): JSX.Element {
   async function shipBatch() {
     if (!contract) return;
     const id = (document.getElementById('shipBatchId') as HTMLSelectElement).value;
-    if (id === '') {
+    console.log("🔍 shipBatchId value:", id);
+    if (!id) {
       alert('Select a batch to ship');
       return;
     }
@@ -153,7 +160,8 @@ function App(): JSX.Element {
   async function receiveBatch() {
     if (!contract) return;
     const id = (document.getElementById('receiveBatchId') as HTMLSelectElement).value;
-    if (id === '') {
+    console.log("🔍 receiveBatchId value:", id);
+    if (!id) {
       alert('Select a batch to receive');
       return;
     }
@@ -207,6 +215,8 @@ function App(): JSX.Element {
     setReceivable(receivableIds);
   }
 
+  console.log("🛠️ confirmable IDs:", confirmable);
+
   return (
     <>
       <button id="connect" onClick={connectWallet}>Connect Wallet</button>
@@ -241,25 +251,28 @@ function App(): JSX.Element {
           <button id="btnPropose" onClick={proposeTransfer}>Propose</button>
 
           <h3>Confirm Transfer</h3>
-          <select id="confirmBatchId">
+          <select id="confirmBatchId" defaultValue="">
+            <option value="" disabled>Select a batch</option>
             {confirmable.map(id => (
-              <option key={id} value={id}>{id.toString()}</option>
+              <option key={id.toString()} value={id.toString()}>{id.toString()}</option>
             ))}
           </select>
           <button id="btnConfirm" onClick={confirmTransfer}>Confirm</button>
 
           <h3>Ship Batch</h3>
-          <select id="shipBatchId">
+          <select id="shipBatchId" defaultValue="">
+            <option value="" disabled>Select a batch</option>
             {shippable.map(id => (
-              <option key={id} value={id}>{id.toString()}</option>
+              <option key={id.toString()} value={id.toString()}>{id.toString()}</option>
             ))}
           </select>
           <button id="btnShip" onClick={shipBatch}>Ship</button>
 
           <h3>Receive Batch</h3>
-          <select id="receiveBatchId">
+          <select id="receiveBatchId" defaultValue="">
+            <option value="" disabled>Select a batch</option>
             {receivable.map(id => (
-              <option key={id} value={id}>{id.toString()}</option>
+              <option key={id.toString()} value={id.toString()}>{id.toString()}</option>
             ))}
           </select>
           <button id="btnReceive" onClick={receiveBatch}>Receive</button>
@@ -280,4 +293,9 @@ function App(): JSX.Element {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<App />);
+const rootEl = document.getElementById('root');
+if (!rootEl) {
+  console.error("❌ Could not find #root element to render into");
+} else {
+  ReactDOM.createRoot(rootEl).render(<App />);
+}
