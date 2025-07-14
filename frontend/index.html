@@ -11,14 +11,16 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
-  <h1>BatchToken Demo</h1>
-  <main>
-    <div id="root"></div>
+  <body>
+    <h1>BatchToken Demo</h1>
+    <button id="toggleDarkMode">Dark Mode</button>
+    <main>
+      <div id="root"></div>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.14.1/dist/ethers.umd.min.js"></script>
     <script src="config.js"></script>
     <script src="abi.js"></script>
-    <script type="text/babel" data-presets="typescript,react" src="app.tsx"></script>
-  </main>
-</body>
+      <script type="text/babel" data-presets="typescript,react" src="app.tsx"></script>
+    </main>
+    <script src="darkmode.js"></script>
+  </body>
 </html>
