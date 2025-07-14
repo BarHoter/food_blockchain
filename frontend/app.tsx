@@ -33,6 +33,18 @@ function App(): JSX.Element {
   const [confirmed, setConfirmed] = useState<bigint[]>([]);
   const [shipped, setShipped] = useState<bigint[]>([]);
   const [received, setReceived] = useState<bigint[]>([]);
+  const [myBatches, setMyBatches] = useState({
+    proposed: [] as bigint[],
+    confirmed: [] as bigint[],
+    shipped: [] as bigint[],
+    received: [] as bigint[],
+  });
+
+  const [myTurn, setMyTurn] = useState({
+    confirm: [] as bigint[],
+    ship: [] as bigint[],
+    receive: [] as bigint[],
+  });
   const [statusId, setStatusId] = useState<string>('');
   const [statusOutput, setStatusOutput] = useState<string>('');
 
@@ -200,11 +212,18 @@ function App(): JSX.Element {
     if (!contract || !signer) return;
     const addr = (await signer.getAddress()).toLowerCase();
 
+    const myProp: bigint[] = [];
+    const myConf: bigint[] = [];
+    const myShip: bigint[] = [];
+    const myRecv: bigint[] = [];
+
     const proposedAll = await contract.batchesInStatus(1);
     setProposed(proposedAll);
     const confirmableIds: bigint[] = [];
     for (const id of proposedAll) {
+      const sender = (await contract.senderOf(id)).toLowerCase();
       const rec = (await contract.recipientOf(id)).toLowerCase();
+      if (sender === addr || rec === addr) myProp.push(id);
       if (rec === addr) confirmableIds.push(id);
     }
     setConfirmable(confirmableIds);
@@ -213,8 +232,10 @@ function App(): JSX.Element {
     setConfirmed(confirmedAll);
     const shippableIds: bigint[] = [];
     for (const id of confirmedAll) {
-      const from = (await contract.senderOf(id)).toLowerCase();
-      if (from === addr) shippableIds.push(id);
+      const sender = (await contract.senderOf(id)).toLowerCase();
+      const rec = (await contract.recipientOf(id)).toLowerCase();
+      if (sender === addr || rec === addr) myConf.push(id);
+      if (sender === addr) shippableIds.push(id);
     }
     setShippable(shippableIds);
 
@@ -222,13 +243,23 @@ function App(): JSX.Element {
     setShipped(shippedAll);
     const receivableIds: bigint[] = [];
     for (const id of shippedAll) {
+      const sender = (await contract.senderOf(id)).toLowerCase();
       const rec = (await contract.recipientOf(id)).toLowerCase();
+      if (sender === addr || rec === addr) myShip.push(id);
       if (rec === addr) receivableIds.push(id);
     }
     setReceivable(receivableIds);
 
     const receivedAll = await contract.batchesInStatus(4);
     setReceived(receivedAll);
+    for (const id of receivedAll) {
+      const sender = (await contract.senderOf(id)).toLowerCase();
+      const rec = (await contract.recipientOf(id)).toLowerCase();
+      if (sender === addr || rec === addr) myRecv.push(id);
+    }
+
+    setMyBatches({ proposed: myProp, confirmed: myConf, shipped: myShip, received: myRecv });
+    setMyTurn({ confirm: confirmableIds, ship: shippableIds, receive: receivableIds });
   }
 
   console.log("🛠️ confirmable IDs:", confirmable);
@@ -304,23 +335,38 @@ function App(): JSX.Element {
           <button id="btnStatus" onClick={checkStatus}>Get Status</button>
           <pre id="statusOutput">{statusOutput}</pre>
 
-          <h3>All Batches By Status</h3>
-          <ul id="statusLists">
+          <h3>Your Batches By Status</h3>
+          <ul id="userStatusLists">
             <li>
               <strong>Proposed:</strong>{' '}
-              {proposed.length ? proposed.map(id => id.toString()).join(', ') : 'none'}
+              {myBatches.proposed.length ? myBatches.proposed.map(id => id.toString()).join(', ') : 'none'}
             </li>
             <li>
               <strong>Confirmed:</strong>{' '}
-              {confirmed.length ? confirmed.map(id => id.toString()).join(', ') : 'none'}
+              {myBatches.confirmed.length ? myBatches.confirmed.map(id => id.toString()).join(', ') : 'none'}
             </li>
             <li>
               <strong>Shipped:</strong>{' '}
-              {shipped.length ? shipped.map(id => id.toString()).join(', ') : 'none'}
+              {myBatches.shipped.length ? myBatches.shipped.map(id => id.toString()).join(', ') : 'none'}
             </li>
             <li>
               <strong>Received:</strong>{' '}
-              {received.length ? received.map(id => id.toString()).join(', ') : 'none'}
+              {myBatches.received.length ? myBatches.received.map(id => id.toString()).join(', ') : 'none'}
+            </li>
+          </ul>
+          <h3>Batches Requiring Your Action</h3>
+          <ul id="turnStatusLists">
+            <li>
+              <strong>Confirm:</strong>{' '}
+              {myTurn.confirm.length ? myTurn.confirm.map(id => id.toString()).join(', ') : 'none'}
+            </li>
+            <li>
+              <strong>Ship:</strong>{' '}
+              {myTurn.ship.length ? myTurn.ship.map(id => id.toString()).join(', ') : 'none'}
+            </li>
+            <li>
+              <strong>Receive:</strong>{' '}
+              {myTurn.receive.length ? myTurn.receive.map(id => id.toString()).join(', ') : 'none'}
             </li>
           </ul>
         </div>
