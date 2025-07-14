@@ -29,7 +29,11 @@ if (!process.env.CONTRACT_ADDRESS) {
 function serveConfig(res) {
   res.writeHead(200, { 'Content-Type': 'application/javascript' });
   const addr = process.env.CONTRACT_ADDRESS || '';
-  res.end(`window.CONTRACT_ADDRESS = '${addr}';`);
+  const providerUrl = process.env.PROVIDER_URL || '';
+  res.end(
+    `window.CONTRACT_ADDRESS = '${addr}';\n` +
+    `window.PROVIDER_URL = '${providerUrl}';`
+  );
 }
 
 if (!process.env.CONTRACT_ADDRESS) {
