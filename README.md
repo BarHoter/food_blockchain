@@ -164,6 +164,11 @@ If `PROVIDER_URL` is set instead it will be used verbatim. When
 automatically connects to
 `https://sepolia.infura.io/v3/<INFURA_PROJECT_ID>`.
 
+### Render deployment
+
+The repo includes a `render.yaml` that configures a Node web service. Create a new service from this file or set the Build and Start commands manually. Use `npm install` to install dependencies and make sure the Start command runs `npm start` (or `node index.js`). Provide environment variables such as `CONTRACT_ADDRESS` and `PROVIDER_URL` (or `INFURA_PROJECT_ID`).
+
+
 ## Event indexer
 
 The indexer script incrementally polls a JSON-RPC provider for a chosen
