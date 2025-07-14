@@ -15,12 +15,21 @@ const PROVIDER_URL =
   (INFURA_PROJECT_ID
     ? `https://sepolia.infura.io/v3/${INFURA_PROJECT_ID}`
     : "http://localhost:8545");
-const ADDRESS_FILE = path.join(__dirname, "..", "address.txt");
+const ADDRESS_FILE = path.join(__dirname, "..", "addresses.json");
+const NETWORK = process.env.NETWORK;
 let CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 if (!CONTRACT_ADDRESS) {
   try {
-    CONTRACT_ADDRESS = fs.readFileSync(ADDRESS_FILE, "utf8").trim();
-    console.log("Using contract address from", ADDRESS_FILE);
+    const data = fs.readFileSync(ADDRESS_FILE, "utf8");
+    const map = JSON.parse(data);
+    const net = NETWORK || Object.keys(map)[0];
+    const addr = map[net];
+    if (addr) {
+      CONTRACT_ADDRESS = addr;
+      console.log("Using %s contract address from %s", net, ADDRESS_FILE);
+    } else if (NETWORK) {
+      console.warn(`No address for network ${NETWORK} in ${ADDRESS_FILE}`);
+    }
   } catch (_) {}
 }
 const EVENT_NAME = process.env.EVENT_NAME || "TransferProposed";
@@ -150,7 +159,7 @@ async function formatEvents(logs, provider, finalizedBlock) {
 async function main() {
   if (!CONTRACT_ADDRESS) {
     console.error(
-      "CONTRACT_ADDRESS env var is required (or provide address.txt)"
+      "CONTRACT_ADDRESS env var is required (or provide addresses.json)"
     );
     process.exit(1);
   }

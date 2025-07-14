@@ -6,16 +6,22 @@ const { spawn } = require('child_process');
 const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 const INDEXER_DIR = path.join(__dirname, '..', 'indexer');
 const PORT = process.env.PORT || 8080;
-const ADDRESS_FILE = path.join(__dirname, '..', 'address.txt');
+const ADDRESS_FILE = path.join(__dirname, '..', 'addresses.json');
+const NETWORK = process.env.NETWORK;
 
 let indexerRunning = false;
 
 if (!process.env.CONTRACT_ADDRESS) {
   try {
-    const addr = fs.readFileSync(ADDRESS_FILE, 'utf8').trim();
+    const data = fs.readFileSync(ADDRESS_FILE, 'utf8');
+    const map = JSON.parse(data);
+    const net = NETWORK || Object.keys(map)[0];
+    const addr = map[net];
     if (addr) {
       process.env.CONTRACT_ADDRESS = addr;
-      console.log('Using contract address from', ADDRESS_FILE);
+      console.log('Using %s contract address from %s', net, ADDRESS_FILE);
+    } else if (NETWORK) {
+      console.warn(`No address for network ${NETWORK} in ${ADDRESS_FILE}`);
     }
   } catch (_) {}
 }
@@ -28,7 +34,7 @@ function serveConfig(res) {
 
 if (!process.env.CONTRACT_ADDRESS) {
   console.warn(
-    'CONTRACT_ADDRESS env var is required for the dashboard refresh to work (or place the address in address.txt)'
+    'CONTRACT_ADDRESS env var is required for the dashboard refresh to work (or place the address in addresses.json)'
   );
 }
 

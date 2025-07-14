@@ -1,9 +1,20 @@
-const { ethers } = require("hardhat");
+const { ethers, network } = require("hardhat");
 const fs = require("fs");
 const path = require("path");
 
+function loadAddress() {
+  if (process.env.CONTRACT_ADDRESS) return process.env.CONTRACT_ADDRESS;
+  const file = path.join(__dirname, "..", "addresses.json");
+  try {
+    const map = JSON.parse(fs.readFileSync(file, "utf8"));
+    const net = process.env.NETWORK || network.name;
+    if (map[net]) return map[net];
+  } catch (_) {}
+  throw new Error("Contract address not found. Set CONTRACT_ADDRESS or add it to addresses.json");
+}
+
 async function main() {
-  const address = fs.readFileSync(path.join(__dirname, "..", "address.txt"), "utf8").trim();
+  const address = loadAddress();
   const [owner] = await ethers.getSigners();
   const token = await ethers.getContractAt("BatchToken", address);
   const tx = await token.proposeTransfer(123, owner.address, Math.floor(Date.now() / 1000));
