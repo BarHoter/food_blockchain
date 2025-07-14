@@ -119,7 +119,7 @@ function App(): JSX.Element {
   async function confirmTransfer() {
     if (!contract) return;
     const id = (document.getElementById('confirmBatchId') as HTMLSelectElement).value;
-    if (!id) {
+    if (id === '') {
       alert('Select a batch to confirm');
       return;
     }
@@ -136,7 +136,7 @@ function App(): JSX.Element {
   async function shipBatch() {
     if (!contract) return;
     const id = (document.getElementById('shipBatchId') as HTMLSelectElement).value;
-    if (!id) {
+    if (id === '') {
       alert('Select a batch to ship');
       return;
     }
@@ -153,7 +153,7 @@ function App(): JSX.Element {
   async function receiveBatch() {
     if (!contract) return;
     const id = (document.getElementById('receiveBatchId') as HTMLSelectElement).value;
-    if (!id) {
+    if (id === '') {
       alert('Select a batch to receive');
       return;
     }

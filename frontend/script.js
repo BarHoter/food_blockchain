@@ -87,7 +87,7 @@ document.getElementById('btnPropose').onclick = async () => {
 
 document.getElementById('btnConfirm').onclick = async () => {
   const id = document.getElementById('confirmBatchId').value;
-  if (!id) {
+  if (id === '') {
     alert('Select a batch to confirm');
     return;
   }
@@ -103,7 +103,7 @@ document.getElementById('btnConfirm').onclick = async () => {
 
 document.getElementById('btnShip').onclick = async () => {
   const id = document.getElementById('shipBatchId').value;
-  if (!id) {
+  if (id === '') {
     alert('Select a batch to ship');
     return;
   }
@@ -119,7 +119,7 @@ document.getElementById('btnShip').onclick = async () => {
 
 document.getElementById('btnReceive').onclick = async () => {
   const id = document.getElementById('receiveBatchId').value;
-  if (!id) {
+  if (id === '') {
     alert('Select a batch to receive');
     return;
   }
