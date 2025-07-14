@@ -132,12 +132,14 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
    ```bash
    npx hardhat run scripts/deploy.js --network localhost
    ```
-   The deployment script writes the address to `address.txt`.
+   The deployment script writes the address to `addresses.json` under the
+   `localhost` key.
 4. Start the built-in server so the dashboard can run the indexer:
    ```bash
    npm run serve
    ```
-   Pass `CONTRACT_ADDRESS=<address>` to override the saved address.
+   Set `NETWORK=localhost` or pass `CONTRACT_ADDRESS=<address>` to override the
+   saved address. The server reads default addresses from `addresses.json`.
    The frontend is served at `http://localhost:8080` and the dashboard at
    `http://localhost:8080/dashboard`.
    If `CONTRACT_ADDRESS` is set, the address field in the UI is pre-filled.
@@ -174,6 +176,8 @@ changes (e.g. after a redeploy).
 ```bash
 # Required contract address
 CONTRACT_ADDRESS=<address> npm run indexer
+# or use a saved address from addresses.json
+NETWORK=sepolia npm run indexer
 ```
 
 Optional environment variables:
