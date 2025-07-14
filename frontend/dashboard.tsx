@@ -11,10 +11,17 @@ function Dashboard(): JSX.Element {
   const [checkpoint, setCheckpoint] = useState<string>('');
   const [events, setEvents] = useState<IndexedEvent[]>([]);
   const [auto, setAuto] = useState<boolean>(false);
+  const [statusLists, setStatusLists] = useState({
+    proposed: [] as bigint[],
+    confirmed: [] as bigint[],
+    shipped: [] as bigint[],
+    received: [] as bigint[],
+  });
 
   useEffect(() => {
     loadCheckpoint();
     loadEvents();
+    loadStatuses();
   }, []);
 
   useEffect(() => {
@@ -48,10 +55,31 @@ function Dashboard(): JSX.Element {
     }
   }
 
+  async function loadStatuses() {
+    const addr = window.CONTRACT_ADDRESS;
+    const url = window.PROVIDER_URL || 'http://localhost:8545';
+    if (!addr) {
+      setStatusLists({ proposed: [], confirmed: [], shipped: [], received: [] });
+      return;
+    }
+    try {
+      const provider = new ethers.JsonRpcProvider(url);
+      const c = new ethers.Contract(addr, abi, provider);
+      const proposed = await c.batchesInStatus(1);
+      const confirmed = await c.batchesInStatus(2);
+      const shipped = await c.batchesInStatus(3);
+      const received = await c.batchesInStatus(4);
+      setStatusLists({ proposed, confirmed, shipped, received });
+    } catch (_) {
+      setStatusLists({ proposed: [], confirmed: [], shipped: [], received: [] });
+    }
+  }
+
   async function runIndexer() {
     await fetch('/api/refresh', { method: 'POST' });
     await loadCheckpoint();
     await loadEvents();
+    await loadStatuses();
   }
 
   return (
@@ -95,6 +123,33 @@ function Dashboard(): JSX.Element {
           )}
         </tbody>
       </table>
+      <h3>Batch IDs By Status</h3>
+      <ul id="statusLists">
+        <li>
+          <strong>Proposed:</strong>{' '}
+          {statusLists.proposed.length
+            ? statusLists.proposed.map(id => id.toString()).join(', ')
+            : 'none'}
+        </li>
+        <li>
+          <strong>Confirmed:</strong>{' '}
+          {statusLists.confirmed.length
+            ? statusLists.confirmed.map(id => id.toString()).join(', ')
+            : 'none'}
+        </li>
+        <li>
+          <strong>Shipped:</strong>{' '}
+          {statusLists.shipped.length
+            ? statusLists.shipped.map(id => id.toString()).join(', ')
+            : 'none'}
+        </li>
+        <li>
+          <strong>Received:</strong>{' '}
+          {statusLists.received.length
+            ? statusLists.received.map(id => id.toString()).join(', ')
+            : 'none'}
+        </li>
+      </ul>
     </>
   );
 }
