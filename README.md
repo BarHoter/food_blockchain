@@ -166,7 +166,7 @@ automatically connects to
 
 ### Render deployment
 
-The repo includes a `render.yaml` that configures a Node web service. Deploy the frontend by linking the repository in Render and setting environment variables like `CONTRACT_ADDRESS` and `PROVIDER_URL` (or `INFURA_PROJECT_ID`). Render runs `npm install` during build and starts the server with `npm start`.
+The repo includes a `render.yaml` that configures a Node web service. Create a new service from this file or set the Build and Start commands manually. Use `npm install` to install dependencies and make sure the Start command runs `npm start` (or `node index.js`). Provide environment variables such as `CONTRACT_ADDRESS` and `PROVIDER_URL` (or `INFURA_PROJECT_ID`).
 
 
 ## Event indexer
