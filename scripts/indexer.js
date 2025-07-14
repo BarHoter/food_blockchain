@@ -1,9 +1,20 @@
 const { ethers } = require("ethers");
 const fs = require("fs");
 const path = require("path");
+const dotenv = require("dotenv");
 const artifact = require("../artifacts/contracts/BatchToken.sol/BatchToken.json");
 
-const PROVIDER_URL = process.env.PROVIDER_URL || "http://localhost:8545";
+const ENV_PATH = path.join(__dirname, "..", ".env");
+if (fs.existsSync(ENV_PATH)) {
+  dotenv.config({ path: ENV_PATH });
+}
+
+const { INFURA_PROJECT_ID } = process.env;
+const PROVIDER_URL =
+  process.env.PROVIDER_URL ||
+  (INFURA_PROJECT_ID
+    ? `https://sepolia.infura.io/v3/${INFURA_PROJECT_ID}`
+    : "http://localhost:8545");
 const ADDRESS_FILE = path.join(__dirname, "..", "address.txt");
 let CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 if (!CONTRACT_ADDRESS) {

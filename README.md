@@ -147,6 +147,21 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
 
 The UI is written in TypeScript and React, loading both via CDN, so no additional build steps are required.
 
+### Sepolia frontend
+
+After deploying to Sepolia you can reuse the same UI against the testnet.
+Provide the deployed address and a Sepolia RPC endpoint when starting the
+server:
+
+```bash
+CONTRACT_ADDRESS=<address> INFURA_PROJECT_ID=<project-id> npm run serve
+```
+
+If `PROVIDER_URL` is set instead it will be used verbatim. When
+`INFURA_PROJECT_ID` is present and `PROVIDER_URL` is omitted the indexer
+automatically connects to
+`https://sepolia.infura.io/v3/<INFURA_PROJECT_ID>`.
+
 ## Event indexer
 
 The indexer script incrementally polls a JSON-RPC provider for a chosen

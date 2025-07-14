@@ -119,6 +119,10 @@ function App(): JSX.Element {
   async function confirmTransfer() {
     if (!contract) return;
     const id = (document.getElementById('confirmBatchId') as HTMLSelectElement).value;
+    if (id === '') {
+      alert('Select a batch to confirm');
+      return;
+    }
     try {
       const tx = await contract.confirmTransfer(id);
       await tx.wait();
@@ -132,6 +136,10 @@ function App(): JSX.Element {
   async function shipBatch() {
     if (!contract) return;
     const id = (document.getElementById('shipBatchId') as HTMLSelectElement).value;
+    if (id === '') {
+      alert('Select a batch to ship');
+      return;
+    }
     try {
       const tx = await contract.shipBatch(id);
       await tx.wait();
@@ -145,6 +153,10 @@ function App(): JSX.Element {
   async function receiveBatch() {
     if (!contract) return;
     const id = (document.getElementById('receiveBatchId') as HTMLSelectElement).value;
+    if (id === '') {
+      alert('Select a batch to receive');
+      return;
+    }
     try {
       const tx = await contract.receiveBatch(id);
       await tx.wait();
