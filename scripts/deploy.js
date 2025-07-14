@@ -1,4 +1,4 @@
-const { ethers } = require("hardhat");
+const { ethers, network } = require("hardhat");
 const fs = require("fs");
 const path = require("path");
 const dotenv = require("dotenv");
@@ -42,7 +42,7 @@ function validateEnv() {
   }
 }
 
-const ADDRESS_FILE = path.join(__dirname, "..", "address.txt");
+const ADDRESS_FILE = path.join(__dirname, "..", "addresses.json");
 
 validateEnv();
 
@@ -56,8 +56,17 @@ async function main() {
 
   try {
     await fs.promises.mkdir(path.dirname(ADDRESS_FILE), { recursive: true });
-    await fs.promises.writeFile(ADDRESS_FILE, token.target.toString());
-    console.log("Saved address to", ADDRESS_FILE);
+    let addresses = {};
+    try {
+      const data = await fs.promises.readFile(ADDRESS_FILE, "utf8");
+      addresses = JSON.parse(data);
+    } catch (_) {}
+    addresses[network.name] = token.target.toString();
+    await fs.promises.writeFile(
+      ADDRESS_FILE,
+      JSON.stringify(addresses, null, 2)
+    );
+    console.log(`Saved ${network.name} address to`, ADDRESS_FILE);
   } catch (err) {
     console.warn("Failed to save address", err);
   }
