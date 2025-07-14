@@ -70,6 +70,23 @@ If the `.env` file or any of the variables are missing, the Hardhat
 configuration will throw an error explaining what is required. The
 deployment script performs the same check before attempting to deploy.
 
+### Verifying on an explorer
+
+To publish the contract's source code, add an `ETHERSCAN_API_KEY` to your `.env`
+and install the Hardhat verify plugin:
+
+```bash
+npm install --save-dev @nomicfoundation/hardhat-verify
+```
+
+After deployment run:
+
+```bash
+npx hardhat verify --network sepolia <deployed-address>
+```
+
+Once verified the explorer will expose a read/write interface for the contract.
+
 ## Offline compilation
 
 A prebuilt copy of the Solidity `0.8.20` compiler is bundled under `compiler/soljson-v0.8.20.js`.

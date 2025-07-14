@@ -11,12 +11,18 @@ if (fs.existsSync(ENV_PATH)) {
 }
 require("@nomicfoundation/hardhat-ethers");
 require("@nomicfoundation/hardhat-chai-matchers");
+try {
+  require("@nomicfoundation/hardhat-verify");
+} catch (_) {
+  console.warn("hardhat-verify plugin not installed");
+}
 
 const {
   ARB_GOERLI_RPC,
   OPT_GOERLI_RPC,
   PRIVATE_KEY,
-  INFURA_PROJECT_ID
+  INFURA_PROJECT_ID,
+  ETHERSCAN_API_KEY
 } = process.env;
 
 // Hardhat sets HARDHAT_NETWORK too late for validation, so parse CLI args
@@ -97,5 +103,8 @@ module.exports = {
       }
     ]
   },
-  networks
+  networks,
+  etherscan: ETHERSCAN_API_KEY
+    ? { apiKey: { sepolia: ETHERSCAN_API_KEY } }
+    : {}
 };
