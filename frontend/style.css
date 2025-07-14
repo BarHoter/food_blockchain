@@ -86,3 +86,45 @@ thead {
   background-color: #333;
   color: #fff;
 }
+
+/* Dark mode styles */
+body.dark {
+  background-color: #121212;
+  color: #eee;
+}
+
+body.dark #controls,
+body.dark #contractControls {
+  background-color: #1e1e1e;
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.05);
+}
+
+body.dark input,
+body.dark select {
+  background-color: #222;
+  border-color: #444;
+  color: #eee;
+}
+
+body.dark button {
+  background-color: #1a73e8;
+}
+
+body.dark button:hover {
+  background-color: #135cb3;
+}
+
+body.dark #statusOutput {
+  background-color: #222;
+}
+
+body.dark thead {
+  background-color: #555;
+  color: #fff;
+}
+
+#toggleDarkMode {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
