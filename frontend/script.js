@@ -87,6 +87,10 @@ document.getElementById('btnPropose').onclick = async () => {
 
 document.getElementById('btnConfirm').onclick = async () => {
   const id = document.getElementById('confirmBatchId').value;
+  if (!id) {
+    alert('Select a batch to confirm');
+    return;
+  }
   try {
     const tx = await contract.confirmTransfer(id);
     await tx.wait();
@@ -99,6 +103,10 @@ document.getElementById('btnConfirm').onclick = async () => {
 
 document.getElementById('btnShip').onclick = async () => {
   const id = document.getElementById('shipBatchId').value;
+  if (!id) {
+    alert('Select a batch to ship');
+    return;
+  }
   try {
     const tx = await contract.shipBatch(id);
     await tx.wait();
@@ -111,6 +119,10 @@ document.getElementById('btnShip').onclick = async () => {
 
 document.getElementById('btnReceive').onclick = async () => {
   const id = document.getElementById('receiveBatchId').value;
+  if (!id) {
+    alert('Select a batch to receive');
+    return;
+  }
   try {
     const tx = await contract.receiveBatch(id);
     await tx.wait();
