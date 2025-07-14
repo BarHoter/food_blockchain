@@ -9,7 +9,8 @@
     "test": "npm run test:ci",
     "setup": "bash ./setup.sh",
     "indexer": "node scripts/indexer.js",
-    "serve": "node scripts/server.js"
+    "serve": "node scripts/server.js",
+    "start": "npm run serve"
   },
   "keywords": [],
   "author": "",
