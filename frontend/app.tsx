@@ -58,6 +58,12 @@ function App(): JSX.Element {
     if (contract && signer) updateSelects();
   }, [contract, signer]);
 
+  useEffect(() => {
+    if (signer && contractAddress && !contract) {
+      loadContract();
+    }
+  }, [signer]);
+
   async function connectWallet() {
     if (!window.ethereum) {
       alert('MetaMask not detected');
