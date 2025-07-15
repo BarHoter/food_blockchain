@@ -1,4 +1,6 @@
-const { useState, useEffect } = React;
+import { useState, useEffect } from 'react';
+import { abi } from './abi.js';
+import { ethers } from 'ethers';
 
 interface IndexedEvent {
   blockNumber: number;
@@ -159,4 +161,4 @@ function Dashboard(): JSX.Element {
   );
 }
 
-(window as any).Dashboard = Dashboard;
+export default Dashboard;
