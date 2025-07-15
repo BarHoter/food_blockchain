@@ -262,3 +262,8 @@ create, edit and delete actors.
 When deploying to Render the `build` command runs `npm run db:init` which
 creates the `actors` table if it is missing. For local development run the same
 command after setting `DATABASE_URL`.
+
+## Styling
+
+Frontend layout and color schemes are documented in
+[`frontend/STYLING.md`](frontend/STYLING.md).
