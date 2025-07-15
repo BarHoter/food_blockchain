@@ -258,3 +258,7 @@ CREATE TABLE actors (
 
 Run the server with `npm run serve` and open `http://localhost:8080/admin` to
 create, edit and delete actors.
+
+When deploying to Render the `build` command runs `npm run db:init` which
+creates the `actors` table if it is missing. For local development run the same
+command after setting `DATABASE_URL`.

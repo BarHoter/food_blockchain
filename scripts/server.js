@@ -115,6 +115,11 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method === 'GET' && req.url === '/api/actors') {
+    if (!process.env.DATABASE_URL) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'DATABASE_URL not configured' }));
+      return;
+    }
     pool
       .query('SELECT id, name, address FROM actors ORDER BY id')
       .then(result => {
@@ -129,6 +134,11 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method === 'POST' && req.url === '/api/actors') {
+    if (!process.env.DATABASE_URL) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'DATABASE_URL not configured' }));
+      return;
+    }
     parseJson(req)
       .then(body =>
         pool.query(
@@ -149,6 +159,11 @@ const server = http.createServer((req, res) => {
 
   if (req.method === 'PUT' && req.url.startsWith('/api/actors/')) {
     const id = req.url.split('/').pop();
+    if (!process.env.DATABASE_URL) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'DATABASE_URL not configured' }));
+      return;
+    }
     parseJson(req)
       .then(body =>
         pool.query(
@@ -169,6 +184,11 @@ const server = http.createServer((req, res) => {
 
   if (req.method === 'DELETE' && req.url.startsWith('/api/actors/')) {
     const id = req.url.split('/').pop();
+    if (!process.env.DATABASE_URL) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'DATABASE_URL not configured' }));
+      return;
+    }
     pool
       .query('DELETE FROM actors WHERE id=$1', [id])
       .then(() => {

@@ -13,7 +13,8 @@
     "start": "npm run serve",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:init": "node scripts/init-db.js"
   },
   "keywords": [],
   "author": "",
