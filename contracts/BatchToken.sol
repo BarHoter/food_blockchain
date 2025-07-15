@@ -27,6 +27,11 @@ contract BatchToken {
     mapping(uint256 => address) public senderOf;
     /// @notice Intended recipient who must confirm and receive the batch
     mapping(uint256 => address) public recipientOf;
+
+    /// @notice Contract administrator allowed to manage actors
+    address public admin;
+    /// @notice Addresses authorized to call lifecycle functions
+    mapping(address => bool) public isActor;
     // Events for each step in the lifecycle
     /// @notice Emitted when a transfer has been proposed
     event TransferProposed(
@@ -40,7 +45,33 @@ contract BatchToken {
     /// @notice Emitted when a confirmed batch is marked as shipped
     event BatchShipped(uint256 indexed batchId);
     /// @notice Emitted when a shipped batch is marked as received
-    event BatchReceived(uint256 indexed batchId);
+event BatchReceived(uint256 indexed batchId);
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "only admin");
+        _;
+    }
+
+    modifier onlyActor() {
+        require(isActor[msg.sender] || msg.sender == admin, "only actor");
+        _;
+    }
+
+    constructor() {
+        admin = msg.sender;
+    }
+
+    /// @notice Grant actor privileges to an address
+    function addActor(address actor) external onlyAdmin {
+        require(!isActor[actor], "already actor");
+        isActor[actor] = true;
+    }
+
+    /// @notice Revoke actor privileges from an address
+    function removeActor(address actor) external onlyAdmin {
+        require(isActor[actor], "not actor");
+        isActor[actor] = false;
+    }
 
     /**
      * @notice Propose a transfer of a food batch.
@@ -53,7 +84,7 @@ contract BatchToken {
         uint256 batchId,
         address to,
         uint256 plannedShipDate
-    ) external {
+    ) external onlyActor {
         // Sender becomes the originator of the batch and cannot be changed
         // until the lifecycle completes.
         require(status[batchId] == Status.None, "already initiated"); // Guard: must be new
@@ -71,7 +102,7 @@ contract BatchToken {
      * @param batchId Unique identifier of the batch token.
      * @dev Emits {TransferConfirmed}. Reverts unless transfer was proposed.
      */
-    function confirmTransfer(uint256 batchId) external {
+    function confirmTransfer(uint256 batchId) external onlyActor {
         // Only the designated recipient is allowed to accept the transfer.
         require(status[batchId] == Status.Proposed, "not proposed"); // Guard: requires proposed
         require(msg.sender == recipientOf[batchId], "only recipient");
@@ -87,7 +118,7 @@ contract BatchToken {
      * @param batchId Unique identifier of the batch token.
      * @dev Emits {BatchShipped}. Reverts unless transfer is confirmed.
      */
-    function shipBatch(uint256 batchId) external {
+    function shipBatch(uint256 batchId) external onlyActor {
         // Shipping can only be triggered by the original sender.
         require(status[batchId] == Status.Confirmed, "not confirmed"); // Guard: requires confirmed
         require(msg.sender == senderOf[batchId], "only sender");
@@ -103,7 +134,7 @@ contract BatchToken {
      * @param batchId Unique identifier of the batch token.
      * @dev Emits {BatchReceived}. Reverts unless batch has been shipped.
      */
-    function receiveBatch(uint256 batchId) external {
+    function receiveBatch(uint256 batchId) external onlyActor {
         // The batch is considered delivered only after the intended recipient
         // acknowledges receipt.
         require(status[batchId] == Status.Shipped, "not shipped"); // Guard: shipped state required
