@@ -8,6 +8,7 @@ describe("BatchToken status tracking", function () {
     const Factory = await ethers.getContractFactory("BatchToken");
     token = await Factory.deploy();
     await token.waitForDeployment();
+    await token.addActor(addr1.address);
   });
 
   it("tracks status across the lifecycle", async () => {

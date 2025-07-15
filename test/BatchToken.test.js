@@ -3,14 +3,15 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("BatchToken", function () {
-    let token, owner, addr1;
+    let token, owner, addr1, addr2;
 
     beforeEach(async () => {
-        [owner, addr1] = await ethers.getSigners();
+        [owner, addr1, addr2] = await ethers.getSigners();
         const Factory = await ethers.getContractFactory("BatchToken");
         token = await Factory.deploy();
         await token.waitForDeployment();
         console.log("Deployed at:", token.target); // ethers v6 uses .target instead of .address
+        await token.addActor(addr1.address);
     });
 
     it("emits TransferProposed correctly", async () => {
@@ -82,5 +83,24 @@ describe("BatchToken", function () {
 
         await expect(token.receiveBatch(3)).to.be.revertedWith("only recipient");
         await token.connect(addr1).receiveBatch(3);
+    });
+
+    it("restricts access to actors or admin", async () => {
+        await expect(
+            token.connect(addr2).addActor(addr2.address)
+        ).to.be.revertedWith("only admin");
+
+        await expect(
+            token.connect(addr2).proposeTransfer(5, addr1.address, 0)
+        ).to.be.revertedWith("only actor");
+
+        await token.proposeTransfer(5, addr2.address, 0);
+        await expect(token.connect(addr2).confirmTransfer(5)).to.be.revertedWith(
+            "only actor"
+        );
+        await token.addActor(addr2.address);
+        await token.connect(addr2).confirmTransfer(5);
+        await token.shipBatch(5);
+        await token.connect(addr2).receiveBatch(5);
     });
 });
