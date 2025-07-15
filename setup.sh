@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-# Install npm dependencies
+# Install npm dependencies including the PostgreSQL driver
 npm install
 
 # Compile contracts so that artifacts are available offline

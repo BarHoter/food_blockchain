@@ -40,6 +40,7 @@ Deployment scripts rely on several optional environment variables
 - `ARB_GOERLI_RPC` – RPC endpoint for Arbitrum Goerli
 - `OPT_GOERLI_RPC` – RPC endpoint for Optimism Goerli
 - `INFURA_PROJECT_ID` – Infura project id used to construct the Sepolia RPC URL
+- `DATABASE_URL` – connection string for the PostgreSQL database
 
 When these variables are provided, the corresponding networks are made available in `hardhat.config.js`.
 
@@ -240,3 +241,20 @@ The dashboard is available at `http://localhost:8080/dashboard` when running
 `npm run serve`. Make sure `CONTRACT_ADDRESS` is set or the **Refresh Index**
 button will fail. Use the button to run the indexer on demand or enable **Auto
 refresh** for periodic indexing.
+
+## Admin interface
+
+The server can optionally connect to a PostgreSQL database specified via the
+`DATABASE_URL` environment variable. A simple `actors` table enables persistent
+management of supply chain participants:
+
+```sql
+CREATE TABLE actors (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  address TEXT NOT NULL
+);
+```
+
+Run the server with `npm run serve` and open `http://localhost:8080/admin` to
+create, edit and delete actors.
