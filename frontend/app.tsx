@@ -82,18 +82,19 @@ function App(): JSX.Element {
 
   async function connectWallet() {
     if (!window.ethereum) {
-      alert('MetaMask not detected');
+      window.showToast?.('MetaMask not detected');
       return;
     }
     await window.ethereum.request({ method: 'eth_requestAccounts' });
     const p = new ethers.BrowserProvider(window.ethereum);
     setProvider(p);
     setSigner(await p.getSigner());
+    window.showToast?.('Wallet connected');
   }
 
   function loadContract() {
     if (!ethers.isAddress(contractAddress)) {
-      alert('Invalid contract address');
+      window.showToast?.('Invalid contract address');
       return;
     }
     const tmp = new ethers.Contract(contractAddress, abi, signer);
@@ -112,6 +113,7 @@ function App(): JSX.Element {
     }
     setContract(tmp);
     setStatusMsg('Contract loaded');
+    window.showToast?.('Contract loaded');
   }
 
   async function proposeTransfer() {
@@ -119,12 +121,12 @@ function App(): JSX.Element {
     const idStr = (document.getElementById('proposeBatchId') as HTMLInputElement).value;
     const to = (document.getElementById('proposeTo') as HTMLInputElement).value.trim();
     if (!idStr || !ethers.isAddress(to)) {
-      alert('Invalid batch ID or recipient address');
+      window.showToast?.('Invalid batch ID or recipient address');
       return;
     }
     const from = (await signer!.getAddress()).toLowerCase();
     if (to.toLowerCase() === from) {
-      alert('Recipient must be different from sender');
+      window.showToast?.('Recipient must be different from sender');
       return;
     }
     const dateStr = (document.getElementById('proposeShipDate') as HTMLInputElement).value;
@@ -137,9 +139,10 @@ function App(): JSX.Element {
       const tx = await contract.proposeTransfer(idStr, to, ts);
       await tx.wait();
       updateSelects();
+      window.showToast?.('Transfer proposed');
     } catch (err: any) {
       console.error('propose failed', err);
-      alert(parseError(err));
+      window.showToast?.(parseError(err));
     }
   }
 
@@ -148,16 +151,17 @@ function App(): JSX.Element {
     const id = (document.getElementById('confirmBatchId') as HTMLSelectElement).value;
     console.log("🔍 confirmBatchId value:", id);
     if (!id) {
-      alert('Select a batch to confirm');
+      window.showToast?.('Select a batch to confirm');
       return;
     }
     try {
       const tx = await contract.confirmTransfer(id);
       await tx.wait();
       updateSelects();
+      window.showToast?.('Transfer confirmed');
     } catch (err: any) {
       console.error('confirm failed', err);
-      alert(parseError(err));
+      window.showToast?.(parseError(err));
     }
   }
 
@@ -166,16 +170,17 @@ function App(): JSX.Element {
     const id = (document.getElementById('shipBatchId') as HTMLSelectElement).value;
     console.log("🔍 shipBatchId value:", id);
     if (!id) {
-      alert('Select a batch to ship');
+      window.showToast?.('Select a batch to ship');
       return;
     }
     try {
       const tx = await contract.shipBatch(id);
       await tx.wait();
       updateSelects();
+      window.showToast?.('Batch shipped');
     } catch (err: any) {
       console.error('ship failed', err);
-      alert(parseError(err));
+      window.showToast?.(parseError(err));
     }
   }
 
@@ -184,16 +189,17 @@ function App(): JSX.Element {
     const id = (document.getElementById('receiveBatchId') as HTMLSelectElement).value;
     console.log("🔍 receiveBatchId value:", id);
     if (!id) {
-      alert('Select a batch to receive');
+      window.showToast?.('Select a batch to receive');
       return;
     }
     try {
       const tx = await contract.receiveBatch(id);
       await tx.wait();
       updateSelects();
+      window.showToast?.('Batch received');
     } catch (err: any) {
       console.error('receive failed', err);
-      alert(parseError(err));
+      window.showToast?.(parseError(err));
     }
   }
 
@@ -204,7 +210,7 @@ function App(): JSX.Element {
       setStatusOutput(s.toString());
     } catch (err: any) {
       console.error('status failed', err);
-      alert(parseError(err));
+      window.showToast?.(parseError(err));
     }
   }
 
@@ -375,9 +381,4 @@ function App(): JSX.Element {
   );
 }
 
-const rootEl = document.getElementById('root');
-if (!rootEl) {
-  console.error("❌ Could not find #root element to render into");
-} else {
-  ReactDOM.createRoot(rootEl).render(<App />);
-}
+(window as any).App = App;
