@@ -4,10 +4,11 @@ This file documents how the basic look and feel of the frontend is structured.
 
 ## Header and Navigation
 
-The top of the page contains a `header` element with the application title and
-the dark mode toggle. The navigation bar is rendered by React and spans the
-full width of the page. It uses CSS flexbox to lay out the links horizontally.
-The relevant styles live in `frontend/style.css` under `.site-header` and `.nav`.
+The header containing the application title, navigation links and dark mode
+toggle is rendered by React. It spans the full width of the page and uses CSS
+flexbox to lay out the links horizontally. All markup lives in
+`frontend/main.tsx` and the relevant styles live in `frontend/style.css` under
+`.site-header`, `.nav` and `.switch`.
 When dark mode is enabled the header and nav use darker background colors.
 
 ## Customising Styles
