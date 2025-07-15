@@ -224,6 +224,7 @@ body.dark thead {
 /* Toggle switch for dark mode */
 .switch {
   display: inline-block;
+  position: relative;
   width: 50px;
   height: 24px;
   margin-left: 1rem;
