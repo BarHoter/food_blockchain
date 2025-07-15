@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import App from './app';
 import Dashboard from './dashboard';
+import './darkmode.js';
 
 function ToastContainer(): JSX.Element | null {
   const [msg, setMsg] = React.useState('');
