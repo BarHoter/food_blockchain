@@ -34,11 +34,13 @@ function Main(): JSX.Element {
         </label>
       </header>
       <ToastContainer />
-      <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/*" element={<App />} />
-      </Routes>
+      <main>
+        <Routes>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/*" element={<App />} />
+        </Routes>
+      </main>
     </BrowserRouter>
   );
 }
