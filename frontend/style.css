@@ -6,7 +6,7 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   min-height: 100vh;
 }
 
@@ -19,7 +19,7 @@ body {
 main {
   width: 90%;
   max-width: 800px;
-  margin-top: 2rem;
+  margin: 2rem auto 0;
 }
 
 .site-header {
