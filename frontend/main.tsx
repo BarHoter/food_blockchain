@@ -1,6 +1,9 @@
 // Entry point for SPA
-
-const { BrowserRouter, Routes, Route, Link } = ReactRouterDOM;
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import App from './app';
+import Dashboard from './dashboard';
 
 function ToastContainer(): JSX.Element | null {
   const [msg, setMsg] = React.useState('');
@@ -21,8 +24,8 @@ function Main(): JSX.Element {
       </nav>
       <ToastContainer />
       <Routes>
-        <Route path="/dashboard" element={React.createElement((window as any).Dashboard)} />
-        <Route path="/*" element={React.createElement((window as any).App)} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/*" element={<App />} />
       </Routes>
     </BrowserRouter>
   );

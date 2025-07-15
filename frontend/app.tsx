@@ -1,11 +1,7 @@
 
-declare const abi: any[];
-
-// Use globals loaded by index.html
-declare const React: any;
-declare const ReactDOM: any;
-const { useState, useEffect } = React;
-const ethers = (window as any).ethers;
+import { useState, useEffect } from 'react';
+import { abi } from './abi.js';
+import { ethers } from 'ethers';
 
 declare global {
   interface Window {
@@ -381,4 +377,4 @@ function App(): JSX.Element {
   );
 }
 
-(window as any).App = App;
+export default App;

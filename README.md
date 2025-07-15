@@ -151,7 +151,11 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
    ```
    The deployment script writes the address to `addresses.json` under the
    `localhost` key.
-4. Start the built-in server so the dashboard can run the indexer:
+4. Build the frontend so the Node server can serve the compiled assets:
+   ```bash
+   npm run build
+   ```
+5. Start the built-in server so the dashboard can run the indexer:
    ```bash
    npm run serve
    ```
@@ -160,14 +164,15 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
    The frontend is served at `http://localhost:8080` and the dashboard at
    `http://localhost:8080/dashboard`.
    If `CONTRACT_ADDRESS` is set, the address field in the UI is pre-filled.
-5. Open `http://localhost:8080` in a browser (Chrome with MetaMask recommended)
+6. Open `http://localhost:8080` in a browser (Chrome with MetaMask recommended)
    to interact with the contract.
-6. Visit `http://localhost:8080/dashboard` to view indexed events.
+7. Visit `http://localhost:8080/dashboard` to view indexed events.
 
-The UI is written in TypeScript and React, loading both via CDN, so no additional
-build steps are required. Because these libraries are fetched from the network
-at runtime an active internet connection is required. When the browser cannot
-reach the CDNs only the page heading will render.
+The UI is built with Vite. During development run `npm run dev` which starts the
+Vite dev server with hot reloading. For offline or production use build the
+frontend with `npm run build` and serve it with `npm run serve`. The compiled
+files live under `frontend/dist` so the application no longer depends on CDN
+access to run.
 
 ### Sepolia frontend
 
@@ -186,7 +191,17 @@ automatically connects to
 
 ### Render deployment
 
-The repo includes a `render.yaml` that configures a Node web service. Create a new service from this file or set the Build and Start commands manually. Use `npm install` to install dependencies and make sure the Start command runs `npm start` (or `node index.js`). Provide environment variables such as `CONTRACT_ADDRESS` and `PROVIDER_URL` (or `INFURA_PROJECT_ID`).
+The repo includes a `render.yaml` that configures a Node web service. Create a new
+service from this file or set the Build and Start commands manually. The build
+step should install dependencies and compile the frontend:
+
+```bash
+npm install && npm run build
+```
+
+The start command runs `npm start` (or `node index.js`). Provide environment
+variables such as `CONTRACT_ADDRESS` and `PROVIDER_URL` (or
+`INFURA_PROJECT_ID`).
 
 
 ## Event indexer

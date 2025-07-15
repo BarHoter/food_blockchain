@@ -1,17 +1,15 @@
 {
-    "compilerOptions": {
-        "jsx": "react",
-        "allowJs": true,
-        "noEmit": true,
-        "strict": false,
-        "baseUrl": ".",
-        "paths": {
-            "*": [
-                "node_modules/*"
-            ]
-        }
-    },
-    "include": [
-        "./**/*"
-    ]
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": false,
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "types": ["vite/client"]
+  },
+  "include": ["./**/*.ts", "./**/*.tsx"]
 }

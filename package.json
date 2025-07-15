@@ -10,7 +10,10 @@
     "setup": "bash ./setup.sh",
     "indexer": "node scripts/indexer.js",
     "serve": "node scripts/server.js",
-    "start": "npm run serve"
+    "start": "npm run serve",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +25,14 @@
     "chai": "^4.5.0",
     "dotenv": "^16.5.0",
     "ethers": "^6.14.1",
-    "hardhat": "^2.24.0"
+    "hardhat": "^2.24.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.11",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.17.0"
   }
 }
