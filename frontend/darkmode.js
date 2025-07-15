@@ -1,7 +1,10 @@
 (function() {
-  function init() {
+  function init(retry = 0) {
     const toggle = document.getElementById('toggleDarkMode');
-    if (!toggle) return;
+    if (!toggle) {
+      if (retry < 10) setTimeout(() => init(retry + 1), 50);
+      return;
+    }
     function apply(dark) {
       document.body.classList.toggle('dark', dark);
       toggle.checked = dark;
@@ -14,7 +17,7 @@
     toggle.addEventListener('change', () => apply(toggle.checked));
   }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => init());
   } else {
     init();
   }

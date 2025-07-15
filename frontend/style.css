@@ -29,6 +29,8 @@ main {
   width: 100%;
   padding: 0 1rem;
   box-sizing: border-box;
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
 }
 
 .nav {
