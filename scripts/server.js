@@ -121,7 +121,7 @@ const server = http.createServer((req, res) => {
       return;
     }
     pool
-      .query('SELECT id, name, address FROM actors ORDER BY id')
+      .query('SELECT id, name, physical_address, blockchain_address, logo_url FROM actors ORDER BY id')
       .then(result => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(result.rows));
@@ -142,8 +142,8 @@ const server = http.createServer((req, res) => {
     parseJson(req)
       .then(body =>
         pool.query(
-          'INSERT INTO actors (name, address) VALUES ($1,$2) RETURNING id, name, address',
-          [body.name, body.address]
+          'INSERT INTO actors (name, physical_address, blockchain_address, logo_url) VALUES ($1,$2,$3,$4) RETURNING id, name, physical_address, blockchain_address, logo_url',
+          [body.name, body.physical_address, body.blockchain_address, body.logo_url]
         )
       )
       .then(result => {
@@ -167,8 +167,8 @@ const server = http.createServer((req, res) => {
     parseJson(req)
       .then(body =>
         pool.query(
-          'UPDATE actors SET name=$1, address=$2 WHERE id=$3 RETURNING id, name, address',
-          [body.name, body.address, id]
+          'UPDATE actors SET name=$1, physical_address=$2, blockchain_address=$3, logo_url=$4 WHERE id=$5 RETURNING id, name, physical_address, blockchain_address, logo_url',
+          [body.name, body.physical_address, body.blockchain_address, body.logo_url, id]
         )
       )
       .then(result => {

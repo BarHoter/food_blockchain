@@ -252,9 +252,15 @@ management of supply chain participants:
 CREATE TABLE actors (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
-  address TEXT NOT NULL
+  physical_address TEXT NOT NULL,
+  blockchain_address TEXT NOT NULL,
+  logo_url TEXT
 );
 ```
+
+Some of this information is stored in Postgres today, but future versions
+may keep certain fields on-chain or in decentralized storage such as
+IPFS/Filecoin.
 
 Run the server with `npm run serve` and open `http://localhost:8080/admin` to
 create, edit and delete actors.

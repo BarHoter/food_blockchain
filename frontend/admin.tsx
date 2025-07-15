@@ -3,13 +3,17 @@ import React, { useEffect, useState } from 'react';
 interface Actor {
   id: number;
   name: string;
-  address: string;
+  physical_address: string;
+  blockchain_address: string;
+  logo_url: string;
 }
 
 function Admin(): JSX.Element {
   const [actors, setActors] = useState<Actor[]>([]);
   const [name, setName] = useState('');
-  const [address, setAddress] = useState('');
+  const [physicalAddress, setPhysicalAddress] = useState('');
+  const [blockchainAddress, setBlockchainAddress] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
 
   useEffect(() => {
     loadActors();
@@ -27,11 +31,18 @@ function Admin(): JSX.Element {
     const res = await fetch('/api/actors', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, address })
+      body: JSON.stringify({
+        name,
+        physical_address: physicalAddress,
+        blockchain_address: blockchainAddress,
+        logo_url: logoUrl
+      })
     });
     if (res.ok) {
       setName('');
-      setAddress('');
+      setPhysicalAddress('');
+      setBlockchainAddress('');
+      setLogoUrl('');
       await loadActors();
     }
   }
@@ -40,7 +51,12 @@ function Admin(): JSX.Element {
     await fetch(`/api/actors/${a.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: a.name, address: a.address })
+      body: JSON.stringify({
+        name: a.name,
+        physical_address: a.physical_address,
+        blockchain_address: a.blockchain_address,
+        logo_url: a.logo_url
+      })
     });
     await loadActors();
   }
@@ -64,9 +80,19 @@ function Admin(): JSX.Element {
           placeholder="Name"
         />
         <input
-          value={address}
-          onChange={e => setAddress(e.target.value)}
-          placeholder="Address"
+          value={physicalAddress}
+          onChange={e => setPhysicalAddress(e.target.value)}
+          placeholder="Physical Address"
+        />
+        <input
+          value={blockchainAddress}
+          onChange={e => setBlockchainAddress(e.target.value)}
+          placeholder="Blockchain Address"
+        />
+        <input
+          value={logoUrl}
+          onChange={e => setLogoUrl(e.target.value)}
+          placeholder="Logo URL"
         />
         <button type="submit">Add</button>
       </form>
@@ -76,10 +102,22 @@ function Admin(): JSX.Element {
             <input
               value={a.name}
               onChange={e => changeActor(a.id, 'name', e.target.value)}
+              placeholder="Name"
             />
             <input
-              value={a.address}
-              onChange={e => changeActor(a.id, 'address', e.target.value)}
+              value={a.physical_address}
+              onChange={e => changeActor(a.id, 'physical_address', e.target.value)}
+              placeholder="Physical Address"
+            />
+            <input
+              value={a.blockchain_address}
+              onChange={e => changeActor(a.id, 'blockchain_address', e.target.value)}
+              placeholder="Blockchain Address"
+            />
+            <input
+              value={a.logo_url}
+              onChange={e => changeActor(a.id, 'logo_url', e.target.value)}
+              placeholder="Logo URL"
             />
             <button onClick={() => saveActor(a)}>Save</button>
             <button onClick={() => deleteActor(a.id)}>Delete</button>
