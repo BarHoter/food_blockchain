@@ -13,7 +13,8 @@
     "start": "npm run serve",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:init": "node scripts/init-db.js"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +34,7 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.17.0"
+    "react-router-dom": "^6.17.0",
+    "pg": "^8.11.3"
   }
 }
