@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import App from './app';
 import Dashboard from './dashboard';
+import './darkmode.js';
 import Admin from './admin';
 
 function ToastContainer(): JSX.Element | null {
