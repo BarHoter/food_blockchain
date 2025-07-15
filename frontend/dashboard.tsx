@@ -76,7 +76,12 @@ function Dashboard(): JSX.Element {
   }
 
   async function runIndexer() {
-    await fetch('/api/refresh', { method: 'POST' });
+    const res = await fetch('/api/refresh', { method: 'POST' });
+    if (res.ok) {
+      window.showToast?.('Index refreshed');
+    } else {
+      window.showToast?.('Indexer error');
+    }
     await loadCheckpoint();
     await loadEvents();
     await loadStatuses();
@@ -154,4 +159,4 @@ function Dashboard(): JSX.Element {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<Dashboard />);
+(window as any).Dashboard = Dashboard;
