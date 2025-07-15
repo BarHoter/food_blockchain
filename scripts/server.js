@@ -3,7 +3,10 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 
-const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
+const FRONTEND_DIST_DIR = path.join(__dirname, '..', 'frontend', 'dist');
+const FRONTEND_DIR = fs.existsSync(FRONTEND_DIST_DIR)
+  ? FRONTEND_DIST_DIR
+  : path.join(__dirname, '..', 'frontend');
 const INDEXER_DIR = path.join(__dirname, '..', 'indexer');
 const PORT = process.env.PORT || 8080;
 const ADDRESS_FILE = path.join(__dirname, '..', 'addresses.json');
