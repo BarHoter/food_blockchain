@@ -164,7 +164,10 @@ This repo ships a minimal web UI under `frontend/` that interacts with the `Batc
    to interact with the contract.
 6. Visit `http://localhost:8080/dashboard` to view indexed events.
 
-The UI is written in TypeScript and React, loading both via CDN, so no additional build steps are required.
+The UI is written in TypeScript and React, loading both via CDN, so no additional
+build steps are required. Because these libraries are fetched from the network
+at runtime an active internet connection is required. When the browser cannot
+reach the CDNs only the page heading will render.
 
 ### Sepolia frontend
 
