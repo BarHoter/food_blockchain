@@ -21,11 +21,18 @@ function ToastContainer(): JSX.Element | null {
 function Main(): JSX.Element {
   return (
     <BrowserRouter>
-      <nav className="nav">
-        <Link to="/">Home</Link> |{' '}
-        <Link to="/dashboard">Dashboard</Link> |{' '}
-        <Link to="/admin">Admin</Link>
-      </nav>
+      <header className="site-header">
+        <h1>BatchToken Demo</h1>
+        <nav className="nav">
+          <Link to="/">Home</Link>
+          <Link to="/dashboard">Dashboard</Link>
+          <Link to="/admin">Admin</Link>
+        </nav>
+        <label className="switch" title="Toggle dark mode">
+          <input type="checkbox" id="toggleDarkMode" />
+          <span className="slider"></span>
+        </label>
+      </header>
       <ToastContainer />
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
