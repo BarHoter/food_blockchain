@@ -8,7 +8,9 @@ async function main() {
   await pool.query(`CREATE TABLE IF NOT EXISTS actors (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    address TEXT NOT NULL
+    physical_address TEXT NOT NULL,
+    blockchain_address TEXT NOT NULL,
+    logo_url TEXT
   )`);
   console.log('Database initialized');
   await pool.end();
