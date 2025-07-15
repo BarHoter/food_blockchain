@@ -57,7 +57,7 @@ function App(): JSX.Element {
   }
 
   useEffect(() => {
-    fetch('contacts.csv')
+    fetch('/contacts.csv')
       .then(res => res.text())
       .then(text => {
         const lines = text.trim().split('\n').slice(1);
