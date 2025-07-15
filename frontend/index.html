@@ -27,6 +27,11 @@
     <script type="text/babel" data-presets="typescript,react" src="dashboard.tsx"></script>
     <script type="text/babel" data-presets="typescript,react" src="main.tsx"></script>
     </main>
+    <script>
+      if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof Babel === 'undefined') {
+        document.getElementById('root').innerText = 'Failed to load frontend libraries. Check your internet connection.';
+      }
+    </script>
     <script src="/darkmode.js"></script>
   </body>
 </html>
