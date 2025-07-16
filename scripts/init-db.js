@@ -5,30 +5,37 @@ async function main() {
     console.log('DATABASE_URL not set, skipping db init');
     return;
   }
-  await pool.query(`CREATE TABLE IF NOT EXISTS actors (
+  // Drop table if it exists so the schema and demo data are recreated on each build
+  await pool.query('DROP TABLE IF EXISTS actors');
+  await pool.query(`CREATE TABLE actors (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     physical_address TEXT NOT NULL,
     blockchain_address TEXT NOT NULL,
     logo_url TEXT
   )`);
-  // Ensure all expected columns exist even if an older version
-  // of the table was created previously. This avoids runtime
-  // errors when the admin interface tries to insert or update
-  // records with missing columns.
+
+  // Insert some demo data to play with
   await pool.query(
-    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS name TEXT"
+    'INSERT INTO actors (name, physical_address, blockchain_address, logo_url) VALUES ' +
+      '($1,$2,$3,$4),($5,$6,$7,$8),($9,$10,$11,$12)',
+    [
+      'Alice Farm',
+      '100 Apple Way',
+      '0x0000000000000000000000000000000000000001',
+      'https://placehold.co/100x100?text=Alice',
+      'Bob Distributor',
+      '200 Banana Blvd',
+      '0x0000000000000000000000000000000000000002',
+      'https://placehold.co/100x100?text=Bob',
+      'Carol Retail',
+      '300 Cherry Ct',
+      '0x0000000000000000000000000000000000000003',
+      'https://placehold.co/100x100?text=Carol'
+    ]
   );
-  await pool.query(
-    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS physical_address TEXT"
-  );
-  await pool.query(
-    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS blockchain_address TEXT"
-  );
-  await pool.query(
-    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS logo_url TEXT"
-  );
-  console.log('Database initialized');
+
+  console.log('Database initialized with demo data');
   await pool.end();
 }
 
