@@ -12,6 +12,22 @@ async function main() {
     blockchain_address TEXT NOT NULL,
     logo_url TEXT
   )`);
+  // Ensure all expected columns exist even if an older version
+  // of the table was created previously. This avoids runtime
+  // errors when the admin interface tries to insert or update
+  // records with missing columns.
+  await pool.query(
+    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS name TEXT NOT NULL"
+  );
+  await pool.query(
+    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS physical_address TEXT NOT NULL"
+  );
+  await pool.query(
+    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS blockchain_address TEXT NOT NULL"
+  );
+  await pool.query(
+    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS logo_url TEXT"
+  );
   console.log('Database initialized');
   await pool.end();
 }
