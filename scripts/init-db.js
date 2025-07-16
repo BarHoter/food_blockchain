@@ -17,13 +17,13 @@ async function main() {
   // errors when the admin interface tries to insert or update
   // records with missing columns.
   await pool.query(
-    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS name TEXT NOT NULL"
+    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS name TEXT"
   );
   await pool.query(
-    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS physical_address TEXT NOT NULL"
+    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS physical_address TEXT"
   );
   await pool.query(
-    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS blockchain_address TEXT NOT NULL"
+    "ALTER TABLE actors ADD COLUMN IF NOT EXISTS blockchain_address TEXT"
   );
   await pool.query(
     "ALTER TABLE actors ADD COLUMN IF NOT EXISTS logo_url TEXT"
