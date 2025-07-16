@@ -1,4 +1,4 @@
-const { ethers, network } = require("hardhat");
+const { ethers, network, run } = require("hardhat");
 const fs = require("fs");
 const path = require("path");
 const dotenv = require("dotenv");
@@ -60,13 +60,24 @@ async function main() {
     try {
       const data = await fs.promises.readFile(ADDRESS_FILE, "utf8");
       addresses = JSON.parse(data);
-    } catch (_) {}
+    } catch (_) { }
     addresses[network.name] = token.target.toString();
     await fs.promises.writeFile(
       ADDRESS_FILE,
       JSON.stringify(addresses, null, 2)
     );
     console.log(`Saved ${network.name} address to`, ADDRESS_FILE);
+
+    console.log("Verifying contract on Etherscan...");
+    try {
+      await run("verify:verify", {
+        address: token.target,
+        constructorArguments: [],
+      });
+      console.log("Contract verified successfully.");
+    } catch (error) {
+      console.warn("Verification failed:", error);
+    }
   } catch (err) {
     console.warn("Failed to save address", err);
   }
