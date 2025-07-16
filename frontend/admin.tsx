@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
+import { abi } from './abi.js';
 
 interface Actor {
   id: number;
@@ -10,19 +12,45 @@ interface Actor {
 
 function Admin(): JSX.Element {
   const [actors, setActors] = useState<Actor[]>([]);
+  const [chainActors, setChainActors] = useState<Record<string, boolean>>({});
+  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
+  const [signer, setSigner] = useState<ethers.Signer | null>(null);
+  const [contract, setContract] = useState<ethers.Contract | null>(null);
+  const [contractAddress, setContractAddress] = useState<string>(window.CONTRACT_ADDRESS || '');
+  const [statusMsg, setStatusMsg] = useState('');
   const [name, setName] = useState('');
   const [physicalAddress, setPhysicalAddress] = useState('');
   const [blockchainAddress, setBlockchainAddress] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
 
+  function parseError(err: any): string {
+    if (!err) return 'Transaction failed';
+    if (err.shortMessage) return err.shortMessage;
+    if (err.error && err.error.message) return err.error.message;
+    if (err.message) return err.message;
+    return 'Transaction failed';
+  }
+
   useEffect(() => {
     loadActors();
-  }, []);
+  }, [contract]);
 
   async function loadActors() {
     const res = await fetch('/api/actors');
     if (res.ok) {
-      setActors(await res.json());
+      const list = await res.json();
+      setActors(list);
+      if (contract) {
+        const statuses: Record<string, boolean> = {};
+        for (const a of list) {
+          try {
+            statuses[a.blockchain_address] = await contract.isActor(a.blockchain_address);
+          } catch (_) {
+            statuses[a.blockchain_address] = false;
+          }
+        }
+        setChainActors(statuses);
+      }
     }
   }
 
@@ -70,9 +98,84 @@ function Admin(): JSX.Element {
     setActors(actors.map(a => (a.id === id ? { ...a, [field]: value } : a)));
   }
 
+  async function connectWallet() {
+    if (!window.ethereum) {
+      window.showToast?.('MetaMask not detected');
+      return;
+    }
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const p = new ethers.BrowserProvider(window.ethereum);
+    setProvider(p);
+    setSigner(await p.getSigner());
+    window.showToast?.('Wallet connected');
+  }
+
+  function loadContract() {
+    if (!signer) return;
+    if (!ethers.isAddress(contractAddress)) {
+      window.showToast?.('Invalid contract address');
+      return;
+    }
+    const c = new ethers.Contract(contractAddress, abi, signer);
+    const required = ['addActor', 'removeActor', 'isActor'];
+    const ok = required.every(fn => typeof (c as any)[fn] === 'function');
+    if (!ok) {
+      setStatusMsg('Contract mismatch');
+      return;
+    }
+    setContract(c);
+    setStatusMsg('Contract loaded');
+    window.showToast?.('Contract loaded');
+  }
+
+  async function approve(addr: string) {
+    if (!contract) {
+      window.showToast?.('Load contract first');
+      return;
+    }
+    try {
+      const tx = await contract.addActor(addr);
+      await tx.wait();
+      window.showToast?.('Actor approved');
+      await loadActors();
+    } catch (err: any) {
+      console.error('approve failed', err);
+      window.showToast?.(parseError(err));
+    }
+  }
+
+  async function revoke(addr: string) {
+    if (!contract) {
+      window.showToast?.('Load contract first');
+      return;
+    }
+    try {
+      const tx = await contract.removeActor(addr);
+      await tx.wait();
+      window.showToast?.('Actor revoked');
+      await loadActors();
+    } catch (err: any) {
+      console.error('revoke failed', err);
+      window.showToast?.(parseError(err));
+    }
+  }
+
   return (
     <div>
       <h2>Manage Actors</h2>
+      <button onClick={connectWallet}>Connect Wallet</button>
+      {signer && (
+        <div className="contract-controls">
+          <input
+            value={contractAddress}
+            onChange={e => setContractAddress(e.target.value)}
+            placeholder="Contract Address"
+            size={42}
+          />
+          <button onClick={loadContract}>Load Contract</button>
+          <span style={{ marginLeft: '0.5rem' }}>{statusMsg}</span>
+        </div>
+      )}
       <form onSubmit={createActor} className="actor-form">
         <input
           value={name}
@@ -121,6 +224,14 @@ function Admin(): JSX.Element {
             />
             <button onClick={() => saveActor(a)}>Save</button>
             <button onClick={() => deleteActor(a.id)}>Delete</button>
+            {chainActors[a.blockchain_address] ? (
+              <button onClick={() => revoke(a.blockchain_address)}>Revoke</button>
+            ) : (
+              <button onClick={() => approve(a.blockchain_address)}>Approve</button>
+            )}
+            <span style={{ marginLeft: '0.5rem' }}>
+              {chainActors[a.blockchain_address] ? 'approved' : 'not approved'}
+            </span>
           </li>
         ))}
       </ul>
