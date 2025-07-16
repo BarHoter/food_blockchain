@@ -203,7 +203,9 @@ const server = http.createServer((req, res) => {
   }
 
   let urlPath = req.url;
-  if (urlPath === '/' || urlPath === '/dashboard') urlPath = '/index.html';
+  if (['/', '/dashboard', '/admin'].includes(urlPath)) {
+    urlPath = '/index.html';
+  }
   let filePath = path.join(FRONTEND_DIR, urlPath);
   if (filePath.startsWith(FRONTEND_DIR) && fs.existsSync(filePath)) {
     serveFile(res, filePath);
