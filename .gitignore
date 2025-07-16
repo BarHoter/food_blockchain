@@ -1,2 +1,12 @@
 .env
 addresses.json
+
+# OS / editor files
+.DS_Store
+
+# Frontend build output
+frontend/dist/
+
+# Indexer data
+indexer/events.json
+indexer/checkpoint.json
