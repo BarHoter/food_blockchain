@@ -267,7 +267,8 @@ create, edit and delete actors.
 
 When deploying to Render the `build` command runs `npm run db:init` which
 creates the `actors` table if it is missing. For local development run the same
-command after setting `DATABASE_URL`.
+command after setting `DATABASE_URL`. If the admin interface fails to add
+actors, rerun `npm run db:init` to ensure the table has all expected columns.
 
 ## Styling
 
