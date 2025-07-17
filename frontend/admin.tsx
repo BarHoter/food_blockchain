@@ -39,7 +39,7 @@ function Admin(): JSX.Element {
 
   // automatically load the default contract in either read-only or signer mode
   useEffect(() => {
-    if (contractAddress) {
+    if (ethers.isAddress(contractAddress)) {
       loadContract();
     }
   }, [contractAddress, signer]);
@@ -55,9 +55,12 @@ function Admin(): JSX.Element {
     setActors(list);
 
     const addr = contractAddress;
-    if (!ethers.isAddress(addr)) return;
+    if (!ethers.isAddress(addr)) {
+      setChainActors({});
+      return;
+    }
 
-    const readContract = contract || new ethers.Contract(addr, abi, readProvider);
+    const readContract = new ethers.Contract(addr, abi, readProvider);
     const statuses: Record<string, boolean> = {};
     for (const a of list) {
       try {
