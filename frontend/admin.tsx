@@ -17,6 +17,7 @@ function Admin(): JSX.Element {
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [contract, setContract] = useState<ethers.Contract | null>(null);
   const [contractAddress, setContractAddress] = useState<string>(window.CONTRACT_ADDRESS || '');
+  const readProvider = new ethers.JsonRpcProvider(window.PROVIDER_URL || 'http://localhost:8545');
   const [statusMsg, setStatusMsg] = useState('');
   const [name, setName] = useState('');
   const [physicalAddress, setPhysicalAddress] = useState('');
@@ -33,25 +34,27 @@ function Admin(): JSX.Element {
 
   useEffect(() => {
     loadActors();
-  }, [contract]);
+  }, [contract, contractAddress]);
 
   async function loadActors() {
     const res = await fetch('/api/actors');
-    if (res.ok) {
-      const list = await res.json();
-      setActors(list);
-      if (contract) {
-        const statuses: Record<string, boolean> = {};
-        for (const a of list) {
-          try {
-            statuses[a.blockchain_address] = await contract.isActor(a.blockchain_address);
-          } catch (_) {
-            statuses[a.blockchain_address] = false;
-          }
-        }
-        setChainActors(statuses);
+    if (!res.ok) return;
+    const list = await res.json();
+    setActors(list);
+
+    const addr = contractAddress;
+    if (!ethers.isAddress(addr)) return;
+
+    const readContract = contract || new ethers.Contract(addr, abi, readProvider);
+    const statuses: Record<string, boolean> = {};
+    for (const a of list) {
+      try {
+        statuses[a.blockchain_address] = await readContract.isActor(a.blockchain_address);
+      } catch (_) {
+        statuses[a.blockchain_address] = false;
       }
     }
+    setChainActors(statuses);
   }
 
   async function createActor(e: React.FormEvent) {
