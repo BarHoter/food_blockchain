@@ -37,6 +37,13 @@ function Admin(): JSX.Element {
     return 'Transaction failed';
   }
 
+  // automatically load the default contract in either read-only or signer mode
+  useEffect(() => {
+    if (ethers.isAddress(contractAddress)) {
+      loadContract();
+    }
+  }, [contractAddress, signer]);
+
   useEffect(() => {
     loadActors();
   }, [contract, contractAddress]);
@@ -48,9 +55,14 @@ function Admin(): JSX.Element {
     setActors(list);
 
     const addr = contractAddress;
-    if (!ethers.isAddress(addr)) return;
+    if (!ethers.isAddress(addr)) {
+      setChainActors({});
+      return;
+    }
 
-    const readContract = contract || new ethers.Contract(addr, abi, readProvider);
+    // use the loaded contract when available to support external providers
+    const readContract =
+      contract || new ethers.Contract(addr, abi, signer || readProvider);
     const statuses: Record<string, boolean> = {};
     for (const a of list) {
       try {
@@ -119,12 +131,12 @@ function Admin(): JSX.Element {
   }
 
   function loadContract() {
-    if (!signer) return;
     if (!ethers.isAddress(contractAddress)) {
       window.showToast?.('Invalid contract address');
       return;
     }
-    const c = new ethers.Contract(contractAddress, abi, signer);
+    const runner = signer || readProvider;
+    const c = new ethers.Contract(contractAddress, abi, runner);
     const required = ['addActor', 'removeActor', 'isActor'];
     const ok = required.every(fn => typeof (c as any)[fn] === 'function');
     if (!ok) {
@@ -132,13 +144,13 @@ function Admin(): JSX.Element {
       return;
     }
     setContract(c);
-    setStatusMsg('Contract loaded');
+    setStatusMsg(signer ? 'Contract loaded' : 'Contract loaded (read-only)');
     window.showToast?.('Contract loaded');
   }
 
   async function approve(addr: string) {
-    if (!contract) {
-      window.showToast?.('Load contract first');
+    if (!contract || !signer) {
+      window.showToast?.('Connect wallet and load contract first');
       return;
     }
     try {
@@ -156,8 +168,8 @@ function Admin(): JSX.Element {
   }
 
   async function revoke(addr: string) {
-    if (!contract) {
-      window.showToast?.('Load contract first');
+    if (!contract || !signer) {
+      window.showToast?.('Connect wallet and load contract first');
       return;
     }
     try {
@@ -185,7 +197,7 @@ function Admin(): JSX.Element {
           placeholder="Contract Address"
           size={42}
         />
-        {signer && <button onClick={loadContract}>Load Contract</button>}
+        <button onClick={loadContract}>Load Contract</button>
         <span style={{ marginLeft: '0.5rem' }}>{statusMsg}</span>
       </div>
       <form onSubmit={createActor} className="actor-form">
