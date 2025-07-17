@@ -2,6 +2,30 @@
 
 This repository contains a minimal Hardhat project that demonstrates a token used to track batches through a supply chain. The `BatchToken` contract emits events for every step of a batch lifecycle.
 
+## Quick Start
+
+```bash
+./setup.sh
+npx hardhat node
+npx hardhat run scripts/deploy.js --network localhost
+npm run serve
+```
+
+See [AGENTS.md](AGENTS.md) for agent roles and [TESTING.md](TESTING.md) to run the
+full suite.
+
+## Table of Contents
+- [Quick Start](#quick-start)
+- [Getting started](#getting-started)
+- [Network configuration](#network-configuration)
+- [Example lifecycle](#example-lifecycle)
+- [Offline compilation](#offline-compilation)
+- [Testing](#testing)
+- [Local frontend](#local-frontend)
+- [Event indexer](#event-indexer)
+- [Admin interface](#admin-interface)
+- [Styling](#styling)
+
 ## Getting started
 
 Run the setup script while online. It installs dependencies and compiles the
@@ -46,7 +70,7 @@ When these variables are provided, the corresponding networks are made available
 
 ### Local Hardhat network
 
-```
+```bash
 npx hardhat node
 npx hardhat run scripts/deploy.js --network localhost
 ```
@@ -56,14 +80,14 @@ npx hardhat run scripts/deploy.js --network localhost
 Make sure `INFURA_PROJECT_ID` and `PRIVATE_KEY` are available as
 environment variables. A convenient way is to place them in a `.env` file:
 
-```
+```bash
 INFURA_PROJECT_ID=<project-id>
 PRIVATE_KEY=<private-key>
 ```
 
 Then deploy using the configured network:
 
-```
+```bash
 npx hardhat run scripts/deploy.js --network sepolia
 ```
 
@@ -120,13 +144,27 @@ The frontend uses this to populate the dropdowns for confirming, shipping and
 receiving.
 See **AGENTS.md** for a list of all agents and their roles.
 
+## Folder structure
+- `contracts/` – Solidity contracts
+- `scripts/` – deployment helpers
+- `frontend/` – Vite-based web UI
+- `indexer/` – event indexing scripts and dashboard
+- `test/` – Hardhat tests
+- `compiler/` – bundled Solidity compiler
+- `artifacts/` and `cache/` – build output
+- `docs/` – additional documentation
+
+
 ## Testing
 
 Offline environments like CI run only the fast test suite:
 
 ```bash
 npm test
+
 ```
+For more details see [TESTING.md](TESTING.md).
+
 
 CI caches the local Hardhat compiler under `~/.cache/hardhat-nodejs/solc` so the first run downloads, subsequent runs are offline.
 
@@ -244,32 +282,7 @@ refresh** for periodic indexing.
 
 ## Admin interface
 
-The server can optionally connect to a PostgreSQL database specified via the
-`DATABASE_URL` environment variable. A simple `actors` table enables persistent
-management of supply chain participants:
-
-```sql
-CREATE TABLE actors (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  physical_address TEXT NOT NULL,
-  blockchain_address TEXT NOT NULL,
-  logo_url TEXT
-);
-```
-
-Some of this information is stored in Postgres today, but future versions
-may keep certain fields on-chain or in decentralized storage such as
-IPFS/Filecoin.
-
-Run the server with `npm run serve` and open `http://localhost:8080/admin` to
-create, edit and delete actors.
-
-When deploying to Render the `build` command runs `npm run db:init`. The script
-now drops the existing `actors` table, recreates it and seeds a few demo rows.
-For local development run the same command after setting `DATABASE_URL` to
-start with fresh sample data. If the admin interface fails to add actors, rerun
-`npm run db:init` to ensure the table has all expected columns.
+See [docs/admin.md](docs/admin.md) for details on running the optional Postgres-backed UI.
 
 ## Styling
 
