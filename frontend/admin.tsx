@@ -16,8 +16,13 @@ function Admin(): JSX.Element {
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [contract, setContract] = useState<ethers.Contract | null>(null);
-  const [contractAddress, setContractAddress] = useState<string>(window.CONTRACT_ADDRESS || '');
-  const readProvider = new ethers.JsonRpcProvider(window.PROVIDER_URL || 'http://localhost:8545');
+  const [contractAddress, setContractAddress] = useState<string>(
+    window.CONTRACT_ADDRESS || ''
+  );
+  const readProvider = new ethers.JsonRpcProvider(
+    window.PROVIDER_URL || 'http://localhost:8545'
+  );
+  const [loadingAddr, setLoadingAddr] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState('');
   const [name, setName] = useState('');
   const [physicalAddress, setPhysicalAddress] = useState('');
@@ -137,6 +142,7 @@ function Admin(): JSX.Element {
       return;
     }
     try {
+      setLoadingAddr(addr);
       const tx = await contract.addActor(addr);
       await tx.wait();
       window.showToast?.('Actor approved');
@@ -144,6 +150,8 @@ function Admin(): JSX.Element {
     } catch (err: any) {
       console.error('approve failed', err);
       window.showToast?.(parseError(err));
+    } finally {
+      setLoadingAddr(null);
     }
   }
 
@@ -153,6 +161,7 @@ function Admin(): JSX.Element {
       return;
     }
     try {
+      setLoadingAddr(addr);
       const tx = await contract.removeActor(addr);
       await tx.wait();
       window.showToast?.('Actor revoked');
@@ -160,6 +169,8 @@ function Admin(): JSX.Element {
     } catch (err: any) {
       console.error('revoke failed', err);
       window.showToast?.(parseError(err));
+    } finally {
+      setLoadingAddr(null);
     }
   }
 
@@ -167,18 +178,16 @@ function Admin(): JSX.Element {
     <div>
       <h2>Manage Actors</h2>
       <button onClick={connectWallet}>Connect Wallet</button>
-      {signer && (
-        <div className="contract-controls">
-          <input
-            value={contractAddress}
-            onChange={e => setContractAddress(e.target.value)}
-            placeholder="Contract Address"
-            size={42}
-          />
-          <button onClick={loadContract}>Load Contract</button>
-          <span style={{ marginLeft: '0.5rem' }}>{statusMsg}</span>
-        </div>
-      )}
+      <div className="contract-controls">
+        <input
+          value={contractAddress}
+          onChange={e => setContractAddress(e.target.value)}
+          placeholder="Contract Address"
+          size={42}
+        />
+        {signer && <button onClick={loadContract}>Load Contract</button>}
+        <span style={{ marginLeft: '0.5rem' }}>{statusMsg}</span>
+      </div>
       <form onSubmit={createActor} className="actor-form">
         <input
           value={name}
@@ -227,7 +236,9 @@ function Admin(): JSX.Element {
             />
             <button onClick={() => saveActor(a)}>Save</button>
             <button onClick={() => deleteActor(a.id)}>Delete</button>
-            {chainActors[a.blockchain_address] ? (
+            {loadingAddr === a.blockchain_address ? (
+              <span className="spinner" />
+            ) : chainActors[a.blockchain_address] ? (
               <button onClick={() => revoke(a.blockchain_address)}>Revoke</button>
             ) : (
               <button onClick={() => approve(a.blockchain_address)}>Approve</button>
