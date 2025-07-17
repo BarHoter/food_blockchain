@@ -60,7 +60,9 @@ function Admin(): JSX.Element {
       return;
     }
 
-    const readContract = new ethers.Contract(addr, abi, readProvider);
+    // use the loaded contract when available to support external providers
+    const readContract =
+      contract || new ethers.Contract(addr, abi, signer || readProvider);
     const statuses: Record<string, boolean> = {};
     for (const a of list) {
       try {
