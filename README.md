@@ -11,7 +11,8 @@ npx hardhat run scripts/deploy.js --network localhost
 npm run serve
 ```
 
-See [AGENTS.md](AGENTS.md) for agent roles and [TESTING.md](TESTING.md) to run the
+See [docs/spec.md](docs/spec.md) for the project specification,
+[AGENTS.md](AGENTS.md) for agent roles and [TESTING.md](TESTING.md) to run the
 full suite.
 
 ## Table of Contents
