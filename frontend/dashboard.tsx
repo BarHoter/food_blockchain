@@ -19,10 +19,13 @@ function Dashboard(): JSX.Element {
     shipped: [] as bigint[],
     received: [] as bigint[],
   });
+  const [items, setItems] = useState<Array<{ item_id: string; name?: string; unit?: string }>>([]);
+  const [meta, setMeta] = useState<Record<string, { batch?: string; itemId?: string; name?: string; unit?: string; qty?: bigint }>>({});
 
   useEffect(() => {
     loadCheckpoint();
     loadEvents();
+    loadItems();
     loadStatuses();
   }, []);
 
@@ -67,13 +70,44 @@ function Dashboard(): JSX.Element {
     try {
       const provider = new ethers.JsonRpcProvider(url);
       const c = new ethers.Contract(addr, abi, provider);
-      const proposed = await c.batchesInStatus(1);
-      const confirmed = await c.batchesInStatus(2);
-      const shipped = await c.batchesInStatus(3);
-      const received = await c.batchesInStatus(4);
+      const fn = (c as any).transfersInStatus || (c as any).batchesInStatus;
+      const proposed = await fn(1);
+      const confirmed = await fn(2);
+      const shipped = await fn(3);
+      const received = await fn(4);
       setStatusLists({ proposed, confirmed, shipped, received });
+
+      const all = Array.from(new Set([...
+        proposed.map((n: bigint) => n.toString()),
+        ...confirmed.map((n: bigint) => n.toString()),
+        ...shipped.map((n: bigint) => n.toString()),
+        ...received.map((n: bigint) => n.toString())
+      ]));
+      const next: Record<string, { batch?: string; itemId?: string; name?: string; unit?: string; qty?: bigint }> = {};
+      for (const id of all) {
+        try {
+          const batch = await (c as any).batchOf(id);
+          let qty: bigint | undefined = undefined;
+          try { qty = await (c as any).quantityOf(id); } catch (_) {}
+          let itemId: string | undefined = undefined;
+          try { itemId = await (c as any).itemOfBatch(String(batch)); } catch (_) {}
+          const item = items.find(i => i.item_id === itemId);
+          next[id] = { batch: String(batch || ''), itemId, name: item?.name || itemId, unit: item?.unit, qty };
+        } catch (_) { /* ignore */ }
+      }
+      setMeta(next);
     } catch (_) {
       setStatusLists({ proposed: [], confirmed: [], shipped: [], received: [] });
+    }
+  }
+
+  async function loadItems() {
+    try {
+      const res = await fetch('/api/items');
+      const list = await res.json();
+      setItems(list || []);
+    } catch (_) {
+      setItems([]);
     }
   }
 
@@ -130,30 +164,62 @@ function Dashboard(): JSX.Element {
           )}
         </tbody>
       </table>
-      <h3>Batch IDs By Status</h3>
+      <h3>Transfer IDs By Status</h3>
       <ul id="statusLists">
         <li>
           <strong>Proposed:</strong>{' '}
           {statusLists.proposed.length
-            ? statusLists.proposed.map(id => id.toString()).join(', ')
+            ? statusLists.proposed.map(id => {
+                const k = id.toString();
+                const m = meta[k] || {};
+                const parts = [k];
+                if (m.batch) parts.push(m.batch);
+                if (m.name) parts.push(m.name + (m.unit ? ` (${m.unit})` : ''));
+                if (m.qty !== undefined) parts.push(`qty ${m.qty.toString()}`);
+                return parts.join(' — ');
+              }).join(', ')
             : 'none'}
         </li>
         <li>
           <strong>Confirmed:</strong>{' '}
           {statusLists.confirmed.length
-            ? statusLists.confirmed.map(id => id.toString()).join(', ')
+            ? statusLists.confirmed.map(id => {
+                const k = id.toString();
+                const m = meta[k] || {};
+                const parts = [k];
+                if (m.batch) parts.push(m.batch);
+                if (m.name) parts.push(m.name + (m.unit ? ` (${m.unit})` : ''));
+                if (m.qty !== undefined) parts.push(`qty ${m.qty.toString()}`);
+                return parts.join(' — ');
+              }).join(', ')
             : 'none'}
         </li>
         <li>
           <strong>Shipped:</strong>{' '}
           {statusLists.shipped.length
-            ? statusLists.shipped.map(id => id.toString()).join(', ')
+            ? statusLists.shipped.map(id => {
+                const k = id.toString();
+                const m = meta[k] || {};
+                const parts = [k];
+                if (m.batch) parts.push(m.batch);
+                if (m.name) parts.push(m.name + (m.unit ? ` (${m.unit})` : ''));
+                if (m.qty !== undefined) parts.push(`qty ${m.qty.toString()}`);
+                return parts.join(' — ');
+              }).join(', ')
             : 'none'}
         </li>
         <li>
           <strong>Received:</strong>{' '}
           {statusLists.received.length
-            ? statusLists.received.map(id => id.toString()).join(', ')
+            ? statusLists.received.map(id => {
+                const k = id.toString();
+                const m = meta[k] || {};
+                const parts = [k];
+                if (m.batch) parts.push(m.batch);
+                if (m.name) parts.push(m.name + (m.unit ? ` (${m.unit})` : ''));
+                if (m.qty !== undefined) parts.push(`qty ${m.qty.toString()}`);
+                return parts.join(' — ');
+              }).join(', ')
             : 'none'}
         </li>
       </ul>

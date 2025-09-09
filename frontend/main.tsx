@@ -24,7 +24,7 @@ function Main(): JSX.Element {
       <header className="site-header">
         <h1>BatchToken Demo</h1>
         <nav className="nav">
-          <Link to="/">Home</Link>
+          <Link to="/">Transfers</Link>
           <Link to="/dashboard">Dashboard</Link>
           <Link to="/admin">Admin</Link>
         </nav>
@@ -45,4 +45,16 @@ function Main(): JSX.Element {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<Main />);
+async function bootstrap() {
+  try {
+    const res = await fetch('/config.json');
+    if (res.ok) {
+      const cfg = await res.json();
+      (window as any).CONTRACT_ADDRESS = cfg.CONTRACT_ADDRESS || '';
+      (window as any).PROVIDER_URL = cfg.PROVIDER_URL || '';
+    }
+  } catch (_) { /* ignore */ }
+  ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<Main />);
+}
+
+bootstrap();
