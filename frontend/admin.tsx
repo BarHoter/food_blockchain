@@ -25,6 +25,7 @@ function Admin(): JSX.Element {
   const [indexing, setIndexing] = useState<boolean>(false);
   const [dbStatus, setDbStatus] = useState<{ configured: boolean; source?: string; maskedUrl?: string; ssl?: boolean; connected?: boolean; error?: string }>({ configured: false });
   const [onchainList, setOnchainList] = useState<string[]>([]);
+  const [onchainItemsMap, setOnchainItemsMap] = useState<Record<string, string>>({});
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [contract, setContract] = useState<ethers.Contract | null>(null);
@@ -42,6 +43,7 @@ function Admin(): JSX.Element {
   const [logoUrl, setLogoUrl] = useState('');
   const [items, setItems] = useState<ItemRow[]>([]);
   const [newItem, setNewItem] = useState<ItemRow>({ item_id: '', name: '', protein: undefined, carbs: undefined, fat: undefined, unit: '' });
+  const [syncingActors, setSyncingActors] = useState(false);
 
   function parseError(err: any): string {
     if (!err) return 'Transaction failed';
@@ -79,7 +81,7 @@ function Admin(): JSX.Element {
   }
 
   useEffect(() => {
-    // Ensure index is fresh before loading on-chain list
+    // Ensure index is fresh before loading on-chain lists
     const refreshThenLoad = async () => {
       try {
         setIndexing(true);
@@ -94,6 +96,11 @@ function Admin(): JSX.Element {
       } finally {
         setIndexing(false);
       }
+      try {
+        const res2 = await fetch('/indexer/items-map.json');
+        const data2 = res2.ok ? await res2.json() : {};
+        setOnchainItemsMap(data2 || {});
+      } catch (_) { setOnchainItemsMap({}); }
     };
     refreshThenLoad();
   }, [contractAddress]);
@@ -195,6 +202,34 @@ function Admin(): JSX.Element {
     await loadActors();
   }
 
+  async function syncMissingActors() {
+    if (!dbStatus.connected) {
+      window.showToast?.('Database not connected');
+      return;
+    }
+    setSyncingActors(true);
+    try {
+      const res = await fetch('/api/actors/sync', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const count = data?.inserted || 0;
+        if (count > 0) {
+          window.showToast?.(`Imported ${count} actor${count === 1 ? '' : 's'} from on-chain approvals`);
+        } else {
+          window.showToast?.('Database already includes all on-chain actors');
+        }
+        await loadActors();
+        await loadDbStatus();
+      } else {
+        window.showToast?.(data?.error || 'Failed to sync actors');
+      }
+    } catch (_) {
+      window.showToast?.('Failed to sync actors');
+    } finally {
+      setSyncingActors(false);
+    }
+  }
+
   async function createItem(e: React.FormEvent) {
     e.preventDefault();
     if (!newItem.item_id) {
@@ -267,6 +302,15 @@ function Admin(): JSX.Element {
     setStatusMsg(signer ? 'Contract loaded' : 'Contract loaded (read-only)');
     window.showToast?.('Contract loaded');
   }
+
+  const missingActorCount = onchainList.filter(addr =>
+    !actors.some(a => (a.blockchain_address || '').toLowerCase() === addr)
+  ).length;
+  const syncButtonLabel = syncingActors
+    ? 'Syncing...'
+    : missingActorCount > 0
+      ? `Import ${missingActorCount} missing actor${missingActorCount === 1 ? '' : 's'}`
+      : 'Sync on-chain actors';
 
   async function approve(addr: string) {
     if (!contract || !signer) {
@@ -357,7 +401,15 @@ function Admin(): JSX.Element {
         />
         <button type="submit" disabled={!dbStatus.connected}>Add</button>
       </form>
-      <h3>Database Actors (checked on-chain)</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <h3>Database Actors (with on-chain approval status)</h3>
+        <button
+          onClick={syncMissingActors}
+          disabled={syncingActors || !dbStatus.connected}
+        >
+          {syncButtonLabel}
+        </button>
+      </div>
       <ul className="actor-list">
         {actors.map(a => (
           <li key={a.id} className="actor-item">
@@ -413,6 +465,21 @@ function Admin(): JSX.Element {
               </li>
             );
           })
+        ) : (
+          <li>None</li>
+        )}
+      </ul>
+
+      <h3>On-chain Batch → Item links {indexing ? '(refreshing...)' : ''}</h3>
+      <ul className="authorized-list">
+        {Object.keys(onchainItemsMap).length ? (
+          Object.entries(onchainItemsMap).map(([batch, item]) => (
+            <li key={batch}>
+              <code>{batch}</code>
+              <span> → </span>
+              <code>{item}</code>
+            </li>
+          ))
         ) : (
           <li>None</li>
         )}

@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/gal/Documents/Projects/food_blockchain/contracts/BatchToken.sol": {
-      "lastModificationDate": 1757406218506,
-      "contentHash": "db66f37f5d4bca5b8d5d41120096f770",
+      "lastModificationDate": 1757509212415,
+      "contentHash": "c69f2b1ca46aec6334d6dfad44db0b42",
       "sourceName": "contracts/BatchToken.sol",
       "solcConfig": {
         "version": "0.8.20",

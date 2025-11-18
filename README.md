@@ -283,7 +283,7 @@ refresh** for periodic indexing.
 
 ## Admin interface
 
-See [docs/admin.md](docs/admin.md) for details on running the optional Postgres-backed UI.
+See [docs/admin.md](docs/admin.md) for details on running the optional Postgres-backed UI, including the automated `npm run sync:actors` command and admin button that imports on-chain actors into a freshly reset database.
 
 ## Styling
 

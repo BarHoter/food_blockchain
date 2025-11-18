@@ -12,6 +12,7 @@ if (fs.existsSync(ENV_PATH)) {
 }
 // Import DB module after env is loaded so it can see DATABASE_URL* vars
 const pool = require('./db');
+const syncActorsFromIndexer = require('./sync-actors-db');
 const FRONTEND_DIST_DIR = path.join(FRONTEND_SRC_DIR, 'dist');
 const USE_DIST = fs.existsSync(path.join(FRONTEND_DIST_DIR, 'index.html'));
 const FRONTEND_DIR = USE_DIST ? FRONTEND_DIST_DIR : FRONTEND_SRC_DIR;
@@ -90,6 +91,16 @@ function serveFile(res, filePath) {
     });
 }
 
+function runScript(script) {
+  return new Promise(resolve => {
+    const child = spawn(process.execPath, [path.join(__dirname, script)], {
+      env: process.env,
+      stdio: 'inherit',
+    });
+    child.on('close', (code) => resolve(code));
+  });
+}
+
 function parseJson(req) {
   return new Promise((resolve, reject) => {
     let data = '';
@@ -166,21 +177,55 @@ const server = http.createServer((req, res) => {
       return;
     }
     indexerRunning = true;
-    // Run both event indexers sequentially: transfers and actors
-    const run = (script) => new Promise(resolve => {
-      const child = spawn(process.execPath, [path.join(__dirname, script)], {
-        env: process.env,
-        stdio: 'inherit',
-      });
-      child.on('close', (code) => resolve(code));
-    });
+    // Run event indexers sequentially: transfers, actors, and batch->item links
     (async () => {
-      const code1 = await run('indexer.js');
-      const code2 = await run('index-actors.js');
+      const code1 = await runScript('indexer.js');
+      const code2 = await runScript('index-actors.js');
+      const code3 = await runScript('index-items.js');
       indexerRunning = false;
-      const ok = code1 === 0 && code2 === 0;
+      const ok = code1 === 0 && code2 === 0 && code3 === 0;
       res.writeHead(ok ? 200 : 500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok }));
+    })();
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/actors/sync') {
+    if (!process.env.DATABASE_URL && !process.env.DATABASE_URL_INTERNAL && !process.env.DATABASE_URL_EXTERNAL) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'DATABASE_URL not configured' }));
+      return;
+    }
+    if (!process.env.CONTRACT_ADDRESS) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'CONTRACT_ADDRESS not set' }));
+      return;
+    }
+    if (indexerRunning) {
+      res.writeHead(409, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'indexer running' }));
+      return;
+    }
+    indexerRunning = true;
+    (async () => {
+      try {
+        const code = await runScript('index-actors.js');
+        if (code !== 0) {
+          throw new Error('index-actors.js failed');
+        }
+        const { inserted } = await syncActorsFromIndexer();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          ok: true,
+          inserted: inserted.length,
+          addresses: inserted.map(row => row.blockchain_address)
+        }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: err?.message || String(err) }));
+      } finally {
+        indexerRunning = false;
+      }
     })();
     return;
   }
@@ -422,17 +467,10 @@ server.listen(PORT, () => {
 // Optionally run indexers on startup to ensure JSON files exist.
 // Set INDEX_ON_START=false to disable.
 if (process.env.CONTRACT_ADDRESS && process.env.INDEX_ON_START !== 'false') {
-  const run = (script) => new Promise(resolve => {
-    const child = spawn(process.execPath, [path.join(__dirname, script)], {
-      env: process.env,
-      stdio: 'inherit',
-    });
-    child.on('close', (code) => resolve(code));
-  });
   (async () => {
     try {
-      await run('indexer.js');
-      await run('index-actors.js');
+      await runScript('indexer.js');
+      await runScript('index-actors.js');
       console.log('Initial indexing complete.');
     } catch (e) {
       console.warn('Initial indexing failed:', e);

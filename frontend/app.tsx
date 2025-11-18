@@ -7,6 +7,7 @@ declare global {
   interface Window {
     ethereum?: any;
     CONTRACT_ADDRESS?: string;
+    PROVIDER_URL?: string;
   }
 }
 
@@ -51,7 +52,13 @@ function App(): JSX.Element {
   const [linkedItemId, setLinkedItemId] = useState<string>("");
   const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [transferMeta, setTransferMeta] = useState<Record<string, { batch?: string; itemId?: string; itemName?: string; unit?: string; quantity?: bigint }>>({});
-  const [pending, setPending] = useState<{ propose?: boolean; confirm?: boolean; ship?: boolean; receive?: boolean }>({});
+  const [pending, setPending] = useState<{ propose?: boolean; confirm?: boolean; ship?: boolean; receive?: boolean; cancelPropose?: boolean; cancelShip?: boolean }>({});
+  const [approvedAddrs, setApprovedAddrs] = useState<string[]>([]);
+  const [checkedApprovedFallback, setCheckedApprovedFallback] = useState<boolean>(false);
+
+  const readProvider = new ethers.JsonRpcProvider(
+    window.PROVIDER_URL || 'http://localhost:8545'
+  );
 
   function parseError(err: any): string {
     if (!err) return 'Transaction failed';
@@ -64,12 +71,26 @@ function App(): JSX.Element {
   useEffect(() => {
     // Prefer DB actors; fallback to CSV contacts
     (async () => {
+      // Load approved actors from the on-chain indexer (if available)
+      try {
+        const resApproved = await fetch('/indexer/actors.json');
+        if (resApproved.ok) {
+          const data = await resApproved.json();
+          const addrs = (data.addresses || []).map((a: string) => (a || '').toLowerCase());
+          setApprovedAddrs(addrs);
+        }
+      } catch (_) { /* ignore */ }
       let haveContacts = false;
       try {
         const res = await fetch('/api/actors');
         if (res.ok) {
           const list = await res.json();
-          const cs: Contact[] = (list || []).map((a: any) => ({ name: a.name, addr: (a.blockchain_address || '').trim() }));
+          let cs: Contact[] = (list || []).map((a: any) => ({ name: a.name, addr: (a.blockchain_address || '').trim() }));
+          // If we have an approved list, filter to only approved actors
+          if (approvedAddrs && approvedAddrs.length) {
+            const approvedSet = new Set(approvedAddrs);
+            cs = cs.filter(c => approvedSet.has((c.addr || '').toLowerCase()));
+          }
           setContacts(cs);
           haveContacts = true;
         }
@@ -87,15 +108,42 @@ function App(): JSX.Element {
           if (!res2.ok) return;
           const text = await res2.text();
           const lines = text.trim().split('\n').slice(1);
-          const cs = lines.map(l => {
+          let cs = lines.map(l => {
             const [name, addr] = l.split(',');
             return { name: (name || '').trim(), addr: (addr || '').trim() };
           });
+          if (approvedAddrs && approvedAddrs.length) {
+            const approvedSet = new Set(approvedAddrs);
+            cs = cs.filter(c => approvedSet.has((c.addr || '').toLowerCase()));
+          }
           setContacts(cs);
         } catch (_) { /* ignore */ }
       }
     })();
-  }, []);
+  }, [approvedAddrs.length]);
+
+  // Fallback: if indexer list is unavailable/empty, query contract.isActor for contacts using a read-only provider
+  useEffect(() => {
+    const run = async () => {
+      if (checkedApprovedFallback) return;
+      if (approvedAddrs.length) return; // already have approved list
+      if (!contacts.length) return; // need contacts to check
+      if (!ethers.isAddress(contractAddress)) return; // need a valid contract address
+      try {
+        const c = new ethers.Contract(contractAddress, abi, readProvider);
+        const unique = Array.from(new Set(contacts.map(c => (c.addr || '').toLowerCase()).filter(Boolean)));
+        const statuses = await Promise.all(unique.map(async (addr) => {
+          try { return await c.isActor(addr); } catch { return false; }
+        }));
+        const approved = unique.filter((addr, i) => !!statuses[i]);
+        if (approved.length) setApprovedAddrs(approved);
+      } catch (_) { /* ignore */ }
+      finally {
+        setCheckedApprovedFallback(true);
+      }
+    };
+    run();
+  }, [contacts, contractAddress, approvedAddrs.length, checkedApprovedFallback]);
 
   useEffect(() => {
     if (contract && signer) updateSelects();
@@ -334,6 +382,40 @@ function App(): JSX.Element {
     }
   }
 
+  async function cancelProposed(id: bigint) {
+    if (!contract) return;
+    try {
+      setPending(p => ({ ...p, cancelPropose: true }));
+      if (typeof (contract as any).cancelTransfer !== 'function') { window.showToast?.('Cancel not supported by contract'); return; }
+      const tx = await (contract as any).cancelTransfer(id);
+      await tx.wait();
+      await updateSelects();
+      window.showToast?.('Transfer canceled');
+    } catch (err: any) {
+      console.error('cancel proposed failed', err);
+      window.showToast?.(parseError(err));
+    } finally {
+      setPending(p => ({ ...p, cancelPropose: false }));
+    }
+  }
+
+  async function cancelShipped(id: bigint) {
+    if (!contract) return;
+    try {
+      setPending(p => ({ ...p, cancelShip: true }));
+      if (typeof (contract as any).cancelShipping !== 'function') { window.showToast?.('Cancel shipping not supported by contract'); return; }
+      const tx = await (contract as any).cancelShipping(id);
+      await tx.wait();
+      await updateSelects();
+      window.showToast?.('Shipping canceled');
+    } catch (err: any) {
+      console.error('cancel shipped failed', err);
+      window.showToast?.(parseError(err));
+    } finally {
+      setPending(p => ({ ...p, cancelShip: false }));
+    }
+  }
+
   async function checkStatus() {
     if (!contract) return;
     try {
@@ -481,6 +563,7 @@ function App(): JSX.Element {
               <datalist id="contactsList">
                 {contacts
                   .filter(c => (c.addr || '').toLowerCase() !== myAddress)
+                  .filter(c => !approvedAddrs.length || approvedAddrs.includes((c.addr || '').toLowerCase()))
                   .map(c => {
                     const label = c.name || c.addr;
                     return (
@@ -561,55 +644,73 @@ function App(): JSX.Element {
           <ul id="userStatusLists">
             <li>
               <strong>Proposed:</strong>{' '}
-              {myBatches.proposed.length ? myBatches.proposed.map(id => {
-                const k = id.toString();
-                const m = transferMeta[k] || {};
-                const name = m.itemName || 'Unknown item';
-                const q = m.quantity !== undefined ? m.quantity.toString() : '';
-                const u = m.unit || '';
-                if (q && u) return `${name} (${q} ${u})`;
-                if (q) return `${name} (${q})`;
-                return name;
-              }).join(', ') : 'none'}
+              {myBatches.proposed.length ? (
+                myBatches.proposed.map(id => {
+                  const k = id.toString();
+                  const m = transferMeta[k] || {};
+                  const name = m.itemName || 'Unknown item';
+                  const q = m.quantity !== undefined ? m.quantity.toString() : '';
+                  const u = m.unit || '';
+                  const label = q && u ? `${name} (${q} ${u})` : q ? `${name} (${q})` : name;
+                  return (
+                    <span key={`prop-${k}`} style={{ marginRight: '0.5rem' }}>
+                      {label}
+                      <button style={{ marginLeft: '0.25rem' }} disabled={!!pending.cancelPropose} onClick={() => cancelProposed(id)}>Cancel transfer</button>
+                    </span>
+                  );
+                })
+              ) : 'none'}
             </li>
             <li>
               <strong>Confirmed:</strong>{' '}
-              {myBatches.confirmed.length ? myBatches.confirmed.map(id => {
-                const k = id.toString();
-                const m = transferMeta[k] || {};
-                const name = m.itemName || 'Unknown item';
-                const q = m.quantity !== undefined ? m.quantity.toString() : '';
-                const u = m.unit || '';
-                if (q && u) return `${name} (${q} ${u})`;
-                if (q) return `${name} (${q})`;
-                return name;
-              }).join(', ') : 'none'}
+              {myBatches.confirmed.length ? (
+                myBatches.confirmed.map(id => {
+                  const k = id.toString();
+                  const m = transferMeta[k] || {};
+                  const name = m.itemName || 'Unknown item';
+                  const q = m.quantity !== undefined ? m.quantity.toString() : '';
+                  const u = m.unit || '';
+                  const label = q && u ? `${name} (${q} ${u})` : q ? `${name} (${q})` : name;
+                  return (
+                    <span key={`conf-${k}`} style={{ marginRight: '0.5rem' }}>{label}</span>
+                  );
+                })
+              ) : 'none'}
             </li>
             <li>
               <strong>Shipped:</strong>{' '}
-              {myBatches.shipped.length ? myBatches.shipped.map(id => {
-                const k = id.toString();
-                const m = transferMeta[k] || {};
-                const name = m.itemName || 'Unknown item';
-                const q = m.quantity !== undefined ? m.quantity.toString() : '';
-                const u = m.unit || '';
-                if (q && u) return `${name} (${q} ${u})`;
-                if (q) return `${name} (${q})`;
-                return name;
-              }).join(', ') : 'none'}
+              {myBatches.shipped.length ? (
+                myBatches.shipped.map(id => {
+                  const k = id.toString();
+                  const m = transferMeta[k] || {};
+                  const name = m.itemName || 'Unknown item';
+                  const q = m.quantity !== undefined ? m.quantity.toString() : '';
+                  const u = m.unit || '';
+                  const label = q && u ? `${name} (${q} ${u})` : q ? `${name} (${q})` : name;
+                  return (
+                    <span key={`ship-${k}`} style={{ marginRight: '0.5rem' }}>
+                      {label}
+                      <button style={{ marginLeft: '0.25rem' }} disabled={!!pending.cancelShip} onClick={() => cancelShipped(id)}>Cancel shipping</button>
+                    </span>
+                  );
+                })
+              ) : 'none'}
             </li>
             <li>
               <strong>Received:</strong>{' '}
-              {myBatches.received.length ? myBatches.received.map(id => {
-                const k = id.toString();
-                const m = transferMeta[k] || {};
-                const name = m.itemName || 'Unknown item';
-                const q = m.quantity !== undefined ? m.quantity.toString() : '';
-                const u = m.unit || '';
-                if (q && u) return `${name} (${q} ${u})`;
-                if (q) return `${name} (${q})`;
-                return name;
-              }).join(', ') : 'none'}
+              {myBatches.received.length ? (
+                myBatches.received.map(id => {
+                  const k = id.toString();
+                  const m = transferMeta[k] || {};
+                  const name = m.itemName || 'Unknown item';
+                  const q = m.quantity !== undefined ? m.quantity.toString() : '';
+                  const u = m.unit || '';
+                  const label = q && u ? `${name} (${q} ${u})` : q ? `${name} (${q})` : name;
+                  return (
+                    <span key={`recv-${k}`} style={{ marginRight: '0.5rem' }}>{label}</span>
+                  );
+                })
+              ) : 'none'}
             </li>
           </ul>
           <h3>Transfers Requiring Your Action</h3>

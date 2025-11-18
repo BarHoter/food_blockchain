@@ -61,6 +61,10 @@ contract BatchToken {
     event TransferShipped(uint256 indexed transferId);
     /// @notice Emitted when a shipped transfer is marked as received
     event TransferReceived(uint256 indexed transferId);
+    /// @notice Emitted when a proposed transfer is canceled by either party
+    event TransferCanceled(uint256 indexed transferId, address indexed by);
+    /// @notice Emitted when shipping is canceled and the transfer returns to Confirmed
+    event TransferUnshipped(uint256 indexed transferId, address indexed by);
     /// @notice Emitted when a batch external id is linked to an item id
     event ItemLinked(string batchExternalId, string itemId);
 
@@ -201,6 +205,39 @@ contract BatchToken {
         indexInList[transferId] = batchesByStatus[uint8(Status.Received)].length;
         batchesByStatus[uint8(Status.Received)].push(transferId);
         emit TransferReceived(transferId);
+    }
+
+    /**
+     * @notice Cancel a proposed transfer.
+     * @dev Removes the transfer from the Proposed list and resets status to None.
+     *      Can be called by either the sender or the recipient while in Proposed state.
+     */
+    function cancelTransfer(uint256 transferId) external onlyActor {
+        require(status[transferId] == Status.Proposed, "not proposed");
+        require(
+            msg.sender == senderOf[transferId] || msg.sender == recipientOf[transferId],
+            "only parties"
+        );
+        _removeFromList(transferId, Status.Proposed);
+        status[transferId] = Status.None;
+        emit TransferCanceled(transferId, msg.sender);
+    }
+
+    /**
+     * @notice Cancel shipping, moving a shipped transfer back to Confirmed.
+     * @dev Can be called by either the sender or the recipient while in Shipped state.
+     */
+    function cancelShipping(uint256 transferId) external onlyActor {
+        require(status[transferId] == Status.Shipped, "not shipped");
+        require(
+            msg.sender == senderOf[transferId] || msg.sender == recipientOf[transferId],
+            "only parties"
+        );
+        _removeFromList(transferId, Status.Shipped);
+        status[transferId] = Status.Confirmed;
+        indexInList[transferId] = batchesByStatus[uint8(Status.Confirmed)].length;
+        batchesByStatus[uint8(Status.Confirmed)].push(transferId);
+        emit TransferUnshipped(transferId, msg.sender);
     }
 
     /// @notice Return all transfer ids that currently have the given status

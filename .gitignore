@@ -10,3 +10,6 @@ frontend/dist/
 # Indexer data
 indexer/events.json
 indexer/checkpoint.json
+
+# Temporary files
+tmp/
