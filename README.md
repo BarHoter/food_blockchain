@@ -281,6 +281,13 @@ The dashboard is available at `http://localhost:8080/dashboard` when running
 button will fail. Use the button to run the indexer on demand or enable **Auto
 refresh** for periodic indexing.
 
+### Transfer status DB indexer
+
+- A separate script (`scripts/index-transfers-db.js`) syncs on-chain transfer status into the `transfer_statuses` Postgres table.
+- It runs on demand via `POST /api/refresh` (and `POST /api/transfers/reindex`) and on a timer every 24h by default. Override the cadence with `TRANSFER_INDEX_INTERVAL_MS`.
+- Requires a configured `DATABASE_URL*` and `CONTRACT_ADDRESS`; if the contract address changes, the checkpoint resets and the table is truncated.
+- Export the current table as CSV from `GET /api/transfers.csv`.
+
 ## Admin interface
 
 See [docs/admin.md](docs/admin.md) for details on running the optional Postgres-backed UI, including the automated `npm run sync:actors` command and admin button that imports on-chain actors into a freshly reset database.

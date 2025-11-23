@@ -1,7 +1,7 @@
 body {
   font-family: 'Roboto', Arial, sans-serif;
-  background-color: #f5f7fa;
-  color: #333;
+  background-color: #f3f4f6;
+  color: #0f172a;
   margin: 0;
   padding: 0;
   display: flex;
@@ -188,8 +188,8 @@ thead {
 
 /* Dark mode styles */
 body.dark {
-  background-color: #121212;
-  color: #eee;
+  background-color: #0b1220;
+  color: #e5e7eb;
 }
 
 body.dark #controls,
@@ -197,6 +197,331 @@ body.dark #contractControls {
   background-color: #1e1e1e;
   border: 2px dashed #ff4081;
   box-shadow: 0 4px 8px rgba(255, 255, 255, 0.05);
+}
+
+body.dark .admin-page {
+  background: #0b1220;
+}
+
+body.dark .admin-hero {
+  background: linear-gradient(120deg, #0c1626, #0d1b2a 55%, #0f766e);
+}
+
+body.dark .summary-card,
+body.dark .panel {
+  background: #0f172a;
+  border-color: #1f2937;
+  color: #e5e7eb;
+}
+
+body.dark .value {
+  color: #e2e8f0;
+}
+
+body.dark .muted {
+  color: #cbd5e1;
+}
+
+body.dark input {
+  background: #111827;
+  color: #e2e8f0;
+  border-color: #1f2937;
+}
+
+body.dark .card-row {
+  background: #111827;
+  border-color: #1f2937;
+}
+
+body.dark .authorized-list li {
+  background: #111827;
+  border-color: #1f2937;
+}
+
+body.dark button {
+  background-color: #ea580c;
+  border-color: #111827;
+  color: #fff;
+}
+
+body.dark .ghost {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #1f2937;
+}
+
+body.dark .pill {
+  background: #111827;
+  border-color: #1f2937;
+  color: #e2e8f0;
+}
+
+body.dark .pill.success {
+  background: #164e63;
+  border-color: #155e75;
+  color: #a5f3fc;
+}
+
+/* Admin redesign */
+.admin-page {
+  width: min(1100px, 95%);
+  margin: 2rem auto 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.admin-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 14px;
+  background: linear-gradient(120deg, #0f172a, #0b2538 55%, #0d9488);
+  color: #f8fafc;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  margin: 0 0 0.35rem 0;
+  color: #cbd5e1;
+}
+
+.hero-title {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: #e2e8f0;
+  max-width: 48ch;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.8rem;
+}
+
+.summary-card {
+  background: #fff;
+  border: 1px solid #dce2eb;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.summary-card.actions {
+  gap: 0.6rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.value {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #0b1220;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.muted {
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.actions-inline {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid #dce2eb;
+  border-radius: 12px;
+  padding: 1rem 1.25rem 1.25rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.contract-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.inline {
+  display: inline-block;
+}
+
+.badge-row {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 0.8rem;
+  border: 1px solid #e2e8f0;
+}
+
+.pill.success {
+  background: #ecfdf3;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.ghost {
+  background: #fff;
+  color: #0f172a;
+  border-color: #d1d5db;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.6rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.card-row {
+  border: 1px solid #dce2eb;
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.6rem;
+  align-items: center;
+  background: #f8fafc;
+}
+
+.stack {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.authorized-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.authorized-list li {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #dce2eb;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.inline-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.table-scroll {
+  overflow: auto;
+}
+
+.changes-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.changes-table th,
+.changes-table td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.changes-table thead th {
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.flow-graph {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 720px) {
+  .contract-row {
+    grid-template-columns: 1fr;
+  }
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .admin-hero {
+    flex-direction: column;
+  }
 }
 
 /* For the transfer section, we want a single column flow outside of the steps grid */

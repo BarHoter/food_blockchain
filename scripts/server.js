@@ -13,6 +13,7 @@ if (fs.existsSync(ENV_PATH)) {
 // Import DB module after env is loaded so it can see DATABASE_URL* vars
 const pool = require('./db');
 const syncActorsFromIndexer = require('./sync-actors-db');
+const syncItemsFromIndexer = require('./sync-items-db');
 const FRONTEND_DIST_DIR = path.join(FRONTEND_SRC_DIR, 'dist');
 const USE_DIST = fs.existsSync(path.join(FRONTEND_DIST_DIR, 'index.html'));
 const FRONTEND_DIR = USE_DIST ? FRONTEND_DIST_DIR : FRONTEND_SRC_DIR;
@@ -20,8 +21,10 @@ const INDEXER_DIR = path.join(__dirname, '..', 'indexer');
 const PORT = process.env.PORT || 8080;
 const ADDRESS_FILE = path.join(__dirname, '..', 'addresses.json');
 const NETWORK = process.env.NETWORK;
+const TRANSFER_INDEX_INTERVAL_MS = parseInt(process.env.TRANSFER_INDEX_INTERVAL_MS || `${24 * 60 * 60 * 1000}`, 10);
 
 let indexerRunning = false;
+let transferIndexerRunning = false;
 
 if (!process.env.CONTRACT_ADDRESS) {
   try {
@@ -79,6 +82,12 @@ function mime(file) {
   return 'text/plain';
 }
 
+function escapeCsvValue(val) {
+  if (val === undefined || val === null) return '';
+  const str = String(val).replace(/"/g, '""');
+  return /[",\n]/.test(str) ? `"${str}"` : str;
+}
+
 function serveFile(res, filePath) {
   fs.promises.readFile(filePath)
     .then((data) => {
@@ -99,6 +108,16 @@ function runScript(script) {
     });
     child.on('close', (code) => resolve(code));
   });
+}
+
+async function runTransferIndexer() {
+  if (transferIndexerRunning) return null;
+  transferIndexerRunning = true;
+  try {
+    return await runScript('index-transfers-db.js');
+  } finally {
+    transferIndexerRunning = false;
+  }
 }
 
 function parseJson(req) {
@@ -182,11 +201,42 @@ const server = http.createServer((req, res) => {
       const code1 = await runScript('indexer.js');
       const code2 = await runScript('index-actors.js');
       const code3 = await runScript('index-items.js');
+      const code4 = await runTransferIndexer();
       indexerRunning = false;
-      const ok = code1 === 0 && code2 === 0 && code3 === 0;
+      const transferOk = code4 === null ? true : code4 === 0;
+      const ok = code1 === 0 && code2 === 0 && code3 === 0 && transferOk;
       res.writeHead(ok ? 200 : 500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok }));
+      res.end(JSON.stringify({ ok, transferOk, transferRunning: code4 === null }));
     })();
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/transfers/reindex') {
+    const info = (typeof pool.getDbInfo === 'function') ? pool.getDbInfo() : { configured: false };
+    if (!info.configured) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'DATABASE_URL not configured' }));
+      return;
+    }
+    if (!process.env.CONTRACT_ADDRESS) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'CONTRACT_ADDRESS not set' }));
+      return;
+    }
+    if (transferIndexerRunning) {
+      res.writeHead(409, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'transfer indexer running' }));
+      return;
+    }
+    (async () => {
+      const code = await runTransferIndexer();
+      const ok = code === 0;
+      res.writeHead(ok ? 200 : 500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok, code }));
+    })().catch(err => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: err?.message || String(err) }));
+    });
     return;
   }
 
@@ -225,6 +275,26 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ ok: false, error: err?.message || String(err) }));
       } finally {
         indexerRunning = false;
+      }
+    })();
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/items/sync') {
+    if (!process.env.DATABASE_URL && !process.env.DATABASE_URL_INTERNAL && !process.env.DATABASE_URL_EXTERNAL) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'DATABASE_URL not configured' }));
+      return;
+    }
+    (async () => {
+      try {
+        await runScript('index-items.js');
+        const result = await syncItemsFromIndexer();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, ...result }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: err?.message || String(err) }));
       }
     })();
     return;
@@ -432,6 +502,147 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.method === 'GET' && req.url === '/api/transfers.csv') {
+    const info = (typeof pool.getDbInfo === 'function') ? pool.getDbInfo() : { configured: false };
+    if (!info.configured) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'DATABASE_URL not configured' }));
+      return;
+    }
+    (async () => {
+      try {
+        const cols = [
+          'transfer_id',
+          'status',
+          'sender',
+          'sender_name',
+          'recipient',
+          'recipient_name',
+          'batch_external_id',
+          'item_id',
+          'item_name',
+          'item_unit',
+          'quantity',
+          'planned_ship_date',
+          'last_event',
+          'last_block',
+          'last_block_time',
+          'last_tx',
+          'last_log_index',
+          'updated_at'
+        ];
+        const result = await pool.query(
+          `SELECT
+            t.transfer_id,
+            t.status,
+            t.sender,
+            sa.name AS sender_name,
+            t.recipient,
+            ra.name AS recipient_name,
+            t.batch_external_id,
+            t.item_id,
+            i.name AS item_name,
+            i.unit AS item_unit,
+            t.quantity,
+            t.planned_ship_date,
+            t.last_event,
+            t.last_block,
+            t.last_block_time,
+            t.last_tx,
+            t.last_log_index,
+            t.updated_at
+          FROM transfer_statuses t
+          LEFT JOIN actors sa ON lower(sa.blockchain_address) = lower(t.sender)
+          LEFT JOIN actors ra ON lower(ra.blockchain_address) = lower(t.recipient)
+          LEFT JOIN items i ON i.item_id = t.item_id
+          ORDER BY t.transfer_id`
+        );
+        const header = cols.join(',');
+        const lines = result.rows.map(row =>
+          cols.map(key => escapeCsvValue(row[key])).join(',')
+        );
+        const csv = [header, ...lines].join('\n');
+        res.writeHead(200, {
+          'Content-Type': 'text/csv',
+          'Content-Disposition': 'attachment; filename="transfers.csv"'
+        });
+        res.end(csv);
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message || 'failed to export transfers' }));
+      }
+    })();
+    return;
+  }
+
+  if (req.method === 'GET' && req.url === '/api/transfer-changes') {
+    const info = (typeof pool.getDbInfo === 'function') ? pool.getDbInfo() : { configured: false };
+    if (!info.configured) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'DATABASE_URL not configured' }));
+      return;
+    }
+    (async () => {
+      try {
+        const result = await pool.query(
+          `SELECT transfer_id, event, status, sender, recipient, batch_external_id, item_id, quantity, block, block_time, tx_hash, log_index
+           FROM transfer_changes
+           ORDER BY COALESCE(block_time, 0) DESC NULLS LAST, block DESC, log_index DESC
+           LIMIT 200`
+        );
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result.rows));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message || 'failed to fetch transfer changes' }));
+      }
+    })();
+    return;
+  }
+
+  if (req.method === 'GET' && req.url === '/api/transfer-changes.csv') {
+    const info = (typeof pool.getDbInfo === 'function') ? pool.getDbInfo() : { configured: false };
+    if (!info.configured) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'DATABASE_URL not configured' }));
+      return;
+    }
+    (async () => {
+      try {
+        const cols = [
+          'transfer_id',
+          'event',
+          'status',
+          'sender',
+          'recipient',
+          'batch_external_id',
+          'item_id',
+          'quantity',
+          'block',
+          'block_time',
+          'tx_hash',
+          'log_index',
+        ];
+        const result = await pool.query(
+          `SELECT ${cols.join(', ')} FROM transfer_changes
+           ORDER BY COALESCE(block_time, 0) DESC NULLS LAST, block DESC, log_index DESC`
+        );
+        const header = cols.join(',');
+        const lines = result.rows.map(row => cols.map(key => escapeCsvValue(row[key])).join(','));
+        const csv = [header, ...lines].join('\n');
+        res.writeHead(200, {
+          'Content-Type': 'text/csv',
+          'Content-Disposition': 'attachment; filename="transfer-changes.csv"'
+        });
+        res.end(csv);
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message || 'failed to export transfer changes' }));
+      }
+    })();
+    return;
+  }
+
   let urlPath = req.url;
   if (["/", "/dashboard", "/admin"].includes(urlPath)) {
     urlPath = "index.html"; // ensure relative so path.join doesn't reset
@@ -484,4 +695,30 @@ if (typeof pool.ensureSchema === 'function' && process.env.DB_INIT_ON_START !== 
   pool.ensureSchema()
     .then(() => console.log('DB schema ensured.'))
     .catch(err => console.warn('DB schema ensure failed:', err.message || err));
+}
+
+const dbInfo = (typeof pool.getDbInfo === 'function') ? pool.getDbInfo() : { configured: false };
+if (
+  TRANSFER_INDEX_INTERVAL_MS > 0 &&
+  process.env.CONTRACT_ADDRESS &&
+  dbInfo.configured
+) {
+  setInterval(() => {
+    if (transferIndexerRunning || indexerRunning) {
+      console.log('Skipping transfer indexer run: another indexing process is active.');
+      return;
+    }
+    runTransferIndexer()
+      .then(code => {
+        if (code === null) return;
+        if (code === 0) {
+          console.log('Transfer indexer (scheduled) finished.');
+        } else {
+          console.warn('Transfer indexer (scheduled) failed with code', code);
+        }
+      })
+      .catch(err => console.warn('Transfer indexer (scheduled) error:', err.message || err));
+  }, TRANSFER_INDEX_INTERVAL_MS);
+  runTransferIndexer().catch(err => console.warn('Initial transfer indexer failed:', err.message || err));
+  console.log(`Transfer indexer scheduled every ${Math.round(TRANSFER_INDEX_INTERVAL_MS / 3600000)}h`);
 }

@@ -102,6 +102,48 @@ async function ensureSchema() {
     );
   `;
   await pool.query(linkDdl);
+
+  const transfersDdl = `
+    CREATE TABLE IF NOT EXISTS transfer_statuses (
+      transfer_id BIGINT PRIMARY KEY,
+      status TEXT NOT NULL,
+      sender TEXT,
+      recipient TEXT,
+      batch_external_id TEXT,
+      item_id TEXT,
+      quantity NUMERIC,
+      planned_ship_date BIGINT,
+      last_event TEXT,
+      last_block BIGINT,
+      last_block_time BIGINT,
+      last_tx TEXT,
+      last_log_index INTEGER,
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `;
+  await pool.query(transfersDdl);
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_transfer_status ON transfer_statuses (status)');
+
+  const transferChangesDdl = `
+    CREATE TABLE IF NOT EXISTS transfer_changes (
+      id BIGSERIAL PRIMARY KEY,
+      transfer_id BIGINT,
+      event TEXT,
+      status TEXT,
+      sender TEXT,
+      recipient TEXT,
+      batch_external_id TEXT,
+      item_id TEXT,
+      quantity NUMERIC,
+      block BIGINT,
+      block_time BIGINT,
+      tx_hash TEXT,
+      log_index INTEGER,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE (tx_hash, log_index)
+    );
+  `;
+  await pool.query(transferChangesDdl);
 }
 
 module.exports = pool;
